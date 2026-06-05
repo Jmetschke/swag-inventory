@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node server/src/server.js",
     "dev": "node server/src/server.js",
-    "sync:inventory-counts": "node server/scripts/apply-inventory-counts.js"
+    "sync:inventory-counts": "node server/scripts/apply-inventory-counts.js",
+    "backfill:reporting-pulls": "node server/scripts/backfill-reporting-pulls.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",

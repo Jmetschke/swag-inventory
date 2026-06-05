@@ -72,6 +72,7 @@ async function initDb() {
       pulled_by TEXT,
       purpose TEXT NOT NULL CHECK(purpose IN ('Event/Promo','Delivery/Client','Employee','Other')),
       notes TEXT,
+      source_ref TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -105,6 +106,11 @@ async function initDb() {
   const physicalCountColumns = await all("PRAGMA table_info(physical_counts)");
   if (!physicalCountColumns.some(column => column.name === "audit_id")) {
     await run("ALTER TABLE physical_counts ADD COLUMN audit_id INTEGER REFERENCES audit_sessions(id)");
+  }
+
+  const pullColumns = await all("PRAGMA table_info(inventory_pulls)");
+  if (!pullColumns.some(column => column.name === "source_ref")) {
+    await run("ALTER TABLE inventory_pulls ADD COLUMN source_ref TEXT");
   }
 
   const [{ count: existing }] = await all("SELECT COUNT(*) AS count FROM items");

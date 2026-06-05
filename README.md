@@ -42,6 +42,18 @@ To apply those counts to an existing Turso database, set `TURSO_DATABASE_URL` an
 npm run sync:inventory-counts
 ```
 
+## Backfill reporting sheet pulls
+
+The pull rows from `swag inventory working 2 (1).xlsx` are stored in `server/src/reporting-pulls-backfill.json`.
+
+To backfill those pulled-item records into an existing Turso database, set `TURSO_DATABASE_URL` and `TURSO_DATABASE_TOKEN`, then run:
+
+```bash
+npm run backfill:reporting-pulls
+```
+
+The backfill uses spreadsheet row source references so it can be run again without duplicating the same rows.
+
 ## Suggested next refinements
 
 1. Add user login/roles.

@@ -1,0 +1,2372 @@
+[
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:2",
+    "sourceRow": 2,
+    "pulledDate": "2026-03-10",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Steve",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:3",
+    "sourceRow": 3,
+    "pulledDate": "2026-03-10",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Steve",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:4",
+    "sourceRow": 4,
+    "pulledDate": "2026-03-10",
+    "item": "5 Below no pouch hoodie black",
+    "qty": 2,
+    "pulledBy": "Steve",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:5",
+    "sourceRow": 5,
+    "pulledDate": "2026-03-10",
+    "item": "Trucker Hat black",
+    "qty": 2,
+    "pulledBy": "Steve",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:6",
+    "sourceRow": 6,
+    "pulledDate": "2026-03-10",
+    "item": "Koozies black",
+    "qty": 4,
+    "pulledBy": "Steve",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:7",
+    "sourceRow": 7,
+    "pulledDate": "2026-03-10",
+    "item": "Pens white",
+    "qty": 4,
+    "pulledBy": "Steve",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:8",
+    "sourceRow": 8,
+    "pulledDate": "2026-03-11",
+    "item": "Trucker Hat black",
+    "qty": 4,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:9",
+    "sourceRow": 9,
+    "pulledDate": "2026-03-11",
+    "item": "Bucket Hat black",
+    "qty": 4,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:10",
+    "sourceRow": 10,
+    "pulledDate": "2026-03-11",
+    "item": "Koozies black",
+    "qty": 6,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:11",
+    "sourceRow": 11,
+    "pulledDate": "2026-03-11",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 2,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:12",
+    "sourceRow": 12,
+    "pulledDate": "2026-03-11",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:13",
+    "sourceRow": 13,
+    "pulledDate": "2026-03-11",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:14",
+    "sourceRow": 14,
+    "pulledDate": "2026-03-11",
+    "item": "5 below Sweatshirt grey",
+    "qty": 2,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:15",
+    "sourceRow": 15,
+    "pulledDate": "2026-03-12",
+    "item": "Draw String Bag blue/black",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:16",
+    "sourceRow": 16,
+    "pulledDate": "2026-03-12",
+    "item": "Thin Tote black",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:17",
+    "sourceRow": 17,
+    "pulledDate": "2026-03-12",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:18",
+    "sourceRow": 18,
+    "pulledDate": "2026-03-12",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 3,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:19",
+    "sourceRow": 19,
+    "pulledDate": "2026-03-12",
+    "item": "Bucket Hat black",
+    "qty": 2,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:20",
+    "sourceRow": 20,
+    "pulledDate": "2026-03-12",
+    "item": "Bucket Hat blue",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:21",
+    "sourceRow": 21,
+    "pulledDate": "2026-03-12",
+    "item": "Beanie multi",
+    "qty": 3,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:22",
+    "sourceRow": 22,
+    "pulledDate": "2026-03-12",
+    "item": "Tiny Backpack beige",
+    "qty": 3,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:23",
+    "sourceRow": 23,
+    "pulledDate": "2026-03-12",
+    "item": "Pens white",
+    "qty": 9,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:24",
+    "sourceRow": 24,
+    "pulledDate": "2026-03-12",
+    "item": "Denim Hat black",
+    "qty": 2,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:25",
+    "sourceRow": 25,
+    "pulledDate": "2026-03-12",
+    "item": "Trucker Hat black",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:26",
+    "sourceRow": 26,
+    "pulledDate": "2026-03-13",
+    "item": "Thin Tote black",
+    "qty": 2,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:27",
+    "sourceRow": 27,
+    "pulledDate": "2026-03-13",
+    "item": "Jean Tote blue",
+    "qty": 1,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:28",
+    "sourceRow": 28,
+    "pulledDate": "2026-03-13",
+    "item": "Denim Hat black",
+    "qty": 3,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:29",
+    "sourceRow": 29,
+    "pulledDate": "2026-03-13",
+    "item": "Beanie multi",
+    "qty": 3,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:30",
+    "sourceRow": 30,
+    "pulledDate": "2026-03-16",
+    "item": "Nice Tote white",
+    "qty": 2,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:31",
+    "sourceRow": 31,
+    "pulledDate": "2026-03-16",
+    "item": "Front Pouch Hoodie black",
+    "qty": 3,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:32",
+    "sourceRow": 32,
+    "pulledDate": "2026-03-16",
+    "item": "Tiny Backpack black",
+    "qty": 2,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:33",
+    "sourceRow": 33,
+    "pulledDate": "2026-03-16",
+    "item": "Koozies black",
+    "qty": 6,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:34",
+    "sourceRow": 34,
+    "pulledDate": "2026-03-16",
+    "item": "Gator rainbow",
+    "qty": 4,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:35",
+    "sourceRow": 35,
+    "pulledDate": "2026-03-16",
+    "item": "Beanie multi",
+    "qty": 6,
+    "pulledBy": "Dicky",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:36",
+    "sourceRow": 36,
+    "pulledDate": "2026-03-18",
+    "item": "Nice Tote white",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:37",
+    "sourceRow": 37,
+    "pulledDate": "2026-03-18",
+    "item": "Front Pouch Hoodie black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:38",
+    "sourceRow": 38,
+    "pulledDate": "2026-03-18",
+    "item": "Denim Hat black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:39",
+    "sourceRow": 39,
+    "pulledDate": "2026-03-18",
+    "item": "Bucket Hat black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:40",
+    "sourceRow": 40,
+    "pulledDate": "2026-03-18",
+    "item": "Bucket Hat white",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:41",
+    "sourceRow": 41,
+    "pulledDate": "2026-03-18",
+    "item": "Amazon T-shirts black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:42",
+    "sourceRow": 42,
+    "pulledDate": "2026-03-18",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "Lois",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:43",
+    "sourceRow": 43,
+    "pulledDate": "2026-03-19",
+    "item": "Gildan T-shirt White",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:44",
+    "sourceRow": 44,
+    "pulledDate": "2026-03-19",
+    "item": "Denim Hat Blue",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:45",
+    "sourceRow": 45,
+    "pulledDate": "2026-03-19",
+    "item": "Denim Hat black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:46",
+    "sourceRow": 46,
+    "pulledDate": "2026-03-19",
+    "item": "Bucket Hat black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:47",
+    "sourceRow": 47,
+    "pulledDate": "2026-03-19",
+    "item": "Sweatshirt Green",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:48",
+    "sourceRow": 48,
+    "pulledDate": "2026-03-19",
+    "item": "Gator rainbow",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:49",
+    "sourceRow": 49,
+    "pulledDate": "2026-03-19",
+    "item": "Gildan T-shirt White",
+    "qty": 1,
+    "pulledBy": "Wayne",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:50",
+    "sourceRow": 50,
+    "pulledDate": "2026-03-19",
+    "item": "Shirt-space T-shirt black",
+    "qty": 1,
+    "pulledBy": "George",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:51",
+    "sourceRow": 51,
+    "pulledDate": "2026-03-19",
+    "item": "Bucket Hat black",
+    "qty": 1,
+    "pulledBy": "",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:52",
+    "sourceRow": 52,
+    "pulledDate": "2026-03-19",
+    "item": "Thin Tote black",
+    "qty": 1,
+    "pulledBy": "",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:53",
+    "sourceRow": 53,
+    "pulledDate": "2026-03-19",
+    "item": "Koozies black",
+    "qty": 6,
+    "pulledBy": "",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:54",
+    "sourceRow": 54,
+    "pulledDate": "2026-03-19",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 1,
+    "pulledBy": "",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:55",
+    "sourceRow": 55,
+    "pulledDate": "2026-03-19",
+    "item": "Gildan T-shirt White",
+    "qty": 2,
+    "pulledBy": "",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:56",
+    "sourceRow": 56,
+    "pulledDate": "2026-03-19",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:57",
+    "sourceRow": 57,
+    "pulledDate": "2026-03-19",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 1,
+    "pulledBy": "",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:58",
+    "sourceRow": 58,
+    "pulledDate": "2026-03-20",
+    "item": "Pens white",
+    "qty": 10,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:59",
+    "sourceRow": 59,
+    "pulledDate": "2026-03-20",
+    "item": "Koozies black",
+    "qty": 9,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:60",
+    "sourceRow": 60,
+    "pulledDate": "2026-03-20",
+    "item": "Gildan T-shirt White",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:61",
+    "sourceRow": 61,
+    "pulledDate": "2026-03-20",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:62",
+    "sourceRow": 62,
+    "pulledDate": "2026-03-20",
+    "item": "printed tote black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:63",
+    "sourceRow": 63,
+    "pulledDate": "2026-03-20",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:64",
+    "sourceRow": 64,
+    "pulledDate": "2026-03-20",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:65",
+    "sourceRow": 65,
+    "pulledDate": "2026-03-23",
+    "item": "Draw String Bag blue/black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:66",
+    "sourceRow": 66,
+    "pulledDate": "2026-03-23",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:67",
+    "sourceRow": 67,
+    "pulledDate": "2026-03-23",
+    "item": "Pens white",
+    "qty": 9,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:68",
+    "sourceRow": 68,
+    "pulledDate": "2026-03-18",
+    "item": "Spacemen",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:69",
+    "sourceRow": 69,
+    "pulledDate": "2026-03-18",
+    "item": "Plug Sockets",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:70",
+    "sourceRow": 70,
+    "pulledDate": "2026-03-19",
+    "item": "Spacemen",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:71",
+    "sourceRow": 71,
+    "pulledDate": "2026-03-19",
+    "item": "Plug Sockets",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:72",
+    "sourceRow": 72,
+    "pulledDate": "2026-03-20",
+    "item": "Spacemen",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:73",
+    "sourceRow": 73,
+    "pulledDate": "2026-03-20",
+    "item": "Plug Sockets",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:74",
+    "sourceRow": 74,
+    "pulledDate": "2026-03-23",
+    "item": "Spacemen",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:75",
+    "sourceRow": 75,
+    "pulledDate": "2026-03-23",
+    "item": "Plug Sockets",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:76",
+    "sourceRow": 76,
+    "pulledDate": "2026-03-23",
+    "item": "Pens white",
+    "qty": 9,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:77",
+    "sourceRow": 77,
+    "pulledDate": "2026-03-23",
+    "item": "Draw String Bag blue/black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:78",
+    "sourceRow": 78,
+    "pulledDate": "2026-03-24",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 5,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:79",
+    "sourceRow": 79,
+    "pulledDate": "2026-03-24",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:80",
+    "sourceRow": 80,
+    "pulledDate": "2026-03-24",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:81",
+    "sourceRow": 81,
+    "pulledDate": "2026-03-24",
+    "item": "Draw String Bag blue/black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:82",
+    "sourceRow": 82,
+    "pulledDate": "2026-03-24",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:83",
+    "sourceRow": 83,
+    "pulledDate": "2026-03-24",
+    "item": "Pins - Hijnx Black",
+    "qty": 11,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:84",
+    "sourceRow": 84,
+    "pulledDate": "2026-03-24",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:85",
+    "sourceRow": 85,
+    "pulledDate": "2026-03-24",
+    "item": "Front Pouch Hoodie off white",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:86",
+    "sourceRow": 86,
+    "pulledDate": "2026-03-24",
+    "item": "Gildan T-shirt Azalea",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:87",
+    "sourceRow": 87,
+    "pulledDate": "2026-03-24",
+    "item": "Gildan T-shirt Light Blue",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:88",
+    "sourceRow": 88,
+    "pulledDate": "2026-03-24",
+    "item": "Gildan T-shirt Ice Grey",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:89",
+    "sourceRow": 89,
+    "pulledDate": "2026-03-24",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:90",
+    "sourceRow": 90,
+    "pulledDate": "2026-03-24",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:91",
+    "sourceRow": 91,
+    "pulledDate": "2026-03-24",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:92",
+    "sourceRow": 92,
+    "pulledDate": "2026-03-24",
+    "item": "Pens white",
+    "qty": 4,
+    "pulledBy": "Greg",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:93",
+    "sourceRow": 93,
+    "pulledDate": "2026-03-25",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:94",
+    "sourceRow": 94,
+    "pulledDate": "2026-03-25",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 1,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:95",
+    "sourceRow": 95,
+    "pulledDate": "2026-03-25",
+    "item": "Gildan T-shirt Natural",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:96",
+    "sourceRow": 96,
+    "pulledDate": "2026-03-25",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:97",
+    "sourceRow": 97,
+    "pulledDate": "2026-03-25",
+    "item": "Pens white",
+    "qty": 9,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:98",
+    "sourceRow": 98,
+    "pulledDate": "2026-03-25",
+    "item": "Magnet hijnx",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:99",
+    "sourceRow": 99,
+    "pulledDate": "2026-03-25",
+    "item": "Pins - Hijnx Black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:100",
+    "sourceRow": 100,
+    "pulledDate": "2026-03-25",
+    "item": "Nice Tote white",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:101",
+    "sourceRow": 101,
+    "pulledDate": "2026-03-25",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:102",
+    "sourceRow": 102,
+    "pulledDate": "2026-03-25",
+    "item": "Koozies black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:103",
+    "sourceRow": 103,
+    "pulledDate": "2026-03-26",
+    "item": "Front Pouch Hoodie black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:104",
+    "sourceRow": 104,
+    "pulledDate": "2026-03-26",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 5,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:105",
+    "sourceRow": 105,
+    "pulledDate": "2026-03-26",
+    "item": "Gildan T-shirt Natural",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:106",
+    "sourceRow": 106,
+    "pulledDate": "2026-03-26",
+    "item": "Koozies black",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:107",
+    "sourceRow": 107,
+    "pulledDate": "2026-03-30",
+    "item": "Nice Tote white",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:108",
+    "sourceRow": 108,
+    "pulledDate": "2026-03-30",
+    "item": "Pens white",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:109",
+    "sourceRow": 109,
+    "pulledDate": "2026-03-30",
+    "item": "Denim Hat Blue",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:110",
+    "sourceRow": 110,
+    "pulledDate": "2026-03-30",
+    "item": "Gildan T-shirt Natural",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:111",
+    "sourceRow": 111,
+    "pulledDate": "2026-03-30",
+    "item": "Front Pouch Hoodie black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:112",
+    "sourceRow": 112,
+    "pulledDate": "2026-03-31",
+    "item": "Front Pouch Hoodie off white",
+    "qty": 1,
+    "pulledBy": "Dre",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:113",
+    "sourceRow": 113,
+    "pulledDate": "2026-03-31",
+    "item": "Gildan T-shirt Natural",
+    "qty": 1,
+    "pulledBy": "dre",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:114",
+    "sourceRow": 114,
+    "pulledDate": "2026-03-31",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "Beccy",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:115",
+    "sourceRow": 115,
+    "pulledDate": "2026-03-31",
+    "item": "Front Pouch Hoodie off white",
+    "qty": 1,
+    "pulledBy": "Eric",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:116",
+    "sourceRow": 116,
+    "pulledDate": "2026-03-31",
+    "item": "Gildan T-shirt Natural",
+    "qty": 5,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:117",
+    "sourceRow": 117,
+    "pulledDate": "2026-03-31",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 2,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:118",
+    "sourceRow": 118,
+    "pulledDate": "2026-03-31",
+    "item": "Gildan T-shirt Light Blue",
+    "qty": 2,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:119",
+    "sourceRow": 119,
+    "pulledDate": "2026-03-31",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:120",
+    "sourceRow": 120,
+    "pulledDate": "2026-03-31",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:121",
+    "sourceRow": 121,
+    "pulledDate": "2026-03-31",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:122",
+    "sourceRow": 122,
+    "pulledDate": "2026-03-31",
+    "item": "thin gator beige",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:123",
+    "sourceRow": 123,
+    "pulledDate": "2026-03-31",
+    "item": "Trucker Hat blue",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:124",
+    "sourceRow": 124,
+    "pulledDate": "2026-03-31",
+    "item": "Spacemen",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:125",
+    "sourceRow": 125,
+    "pulledDate": "2026-03-31",
+    "item": "Plug Sockets",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:126",
+    "sourceRow": 126,
+    "pulledDate": "2026-03-31",
+    "item": "Gildan T-shirt Natural",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:127",
+    "sourceRow": 127,
+    "pulledDate": "2026-04-01",
+    "item": "Gator rainbow",
+    "qty": 9,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:128",
+    "sourceRow": 128,
+    "pulledDate": "2026-04-01",
+    "item": "Front Pouch Hoodie off white",
+    "qty": 3,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:129",
+    "sourceRow": 129,
+    "pulledDate": "2026-04-01",
+    "item": "Sweatshirt Green",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:130",
+    "sourceRow": 130,
+    "pulledDate": "2026-04-01",
+    "item": "Gildan T-shirt Natural",
+    "qty": 5,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:131",
+    "sourceRow": 131,
+    "pulledDate": "2026-04-01",
+    "item": "Shirt-space T-shirt black",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:132",
+    "sourceRow": 132,
+    "pulledDate": "2026-04-01",
+    "item": "Shirt-space T-shirt grey",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:133",
+    "sourceRow": 133,
+    "pulledDate": "2026-04-01",
+    "item": "Gildan T-shirt Azalea",
+    "qty": 6,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:134",
+    "sourceRow": 134,
+    "pulledDate": "2026-04-01",
+    "item": "Gildan T-shirt Light Blue",
+    "qty": 1,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:135",
+    "sourceRow": 135,
+    "pulledDate": "2026-04-01",
+    "item": "Gildan T-shirt Blackberry",
+    "qty": 1,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:136",
+    "sourceRow": 136,
+    "pulledDate": "2026-04-01",
+    "item": "Gildan T-shirt Coral Silk",
+    "qty": 3,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:137",
+    "sourceRow": 137,
+    "pulledDate": "2026-04-02",
+    "item": "Gildan T-shirt Coral Silk",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:138",
+    "sourceRow": 138,
+    "pulledDate": "2026-04-02",
+    "item": "Gildan T-shirt Neon Green",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:139",
+    "sourceRow": 139,
+    "pulledDate": "2026-04-02",
+    "item": "Gildan T-shirt Azalea",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:140",
+    "sourceRow": 140,
+    "pulledDate": "2026-04-02",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:141",
+    "sourceRow": 141,
+    "pulledDate": "2026-04-02",
+    "item": "Draw String Bag blue/black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:142",
+    "sourceRow": 142,
+    "pulledDate": "2026-04-02",
+    "item": "thin gator green",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:143",
+    "sourceRow": 143,
+    "pulledDate": "2026-04-02",
+    "item": "thin gator beige",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:144",
+    "sourceRow": 144,
+    "pulledDate": "2026-04-02",
+    "item": "Koozies black",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:145",
+    "sourceRow": 145,
+    "pulledDate": "2026-04-02",
+    "item": "Spacemen",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:146",
+    "sourceRow": 146,
+    "pulledDate": "2026-04-02",
+    "item": "Plug Sockets",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:147",
+    "sourceRow": 147,
+    "pulledDate": "2026-04-03",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:148",
+    "sourceRow": 148,
+    "pulledDate": "2026-04-03",
+    "item": "Gildan T-shirt Coral Silk",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:149",
+    "sourceRow": 149,
+    "pulledDate": "2026-04-03",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:150",
+    "sourceRow": 150,
+    "pulledDate": "2026-04-03",
+    "item": "Trucker Hat black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:151",
+    "sourceRow": 151,
+    "pulledDate": "2026-04-03",
+    "item": "Beanie multi",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:152",
+    "sourceRow": 152,
+    "pulledDate": "2026-04-08",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 1,
+    "pulledBy": "WAYNE",
+    "purpose": "Employee",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:153",
+    "sourceRow": 153,
+    "pulledDate": "2026-04-06",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 5,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:154",
+    "sourceRow": 154,
+    "pulledDate": "2026-04-06",
+    "item": "Gildan T-shirt Coral Silk",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:155",
+    "sourceRow": 155,
+    "pulledDate": "2026-04-06",
+    "item": "Nice Tote black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:156",
+    "sourceRow": 156,
+    "pulledDate": "2026-04-06",
+    "item": "Spacemen",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:157",
+    "sourceRow": 157,
+    "pulledDate": "2026-04-06",
+    "item": "Plug Sockets",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:158",
+    "sourceRow": 158,
+    "pulledDate": "2026-04-06",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:159",
+    "sourceRow": 159,
+    "pulledDate": "2026-04-06",
+    "item": "Gildan T-shirt Coral Silk",
+    "qty": 4,
+    "pulledBy": "jenny",
+    "purpose": "Delivery/Client",
+    "notes": "Ivy Hall CRY LK"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:160",
+    "sourceRow": 160,
+    "pulledDate": "2026-04-06",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 2,
+    "pulledBy": "jenny",
+    "purpose": "Delivery/Client",
+    "notes": "Ivy Hall CRY LK"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:161",
+    "sourceRow": 161,
+    "pulledDate": "2026-04-06",
+    "item": "Front Pouch Hoodie black",
+    "qty": 2,
+    "pulledBy": "jenny",
+    "purpose": "Delivery/Client",
+    "notes": "Ivy Hall CRY LK"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:162",
+    "sourceRow": 162,
+    "pulledDate": "2026-04-06",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 2,
+    "pulledBy": "jenny",
+    "purpose": "Delivery/Client",
+    "notes": "Ivy Hall CRY LK"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:163",
+    "sourceRow": 163,
+    "pulledDate": "2026-04-06",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "jenny",
+    "purpose": "Delivery/Client",
+    "notes": "Ivy Hall CRY LK"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:164",
+    "sourceRow": 164,
+    "pulledDate": "2026-04-06",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "jenny",
+    "purpose": "Delivery/Client",
+    "notes": "Ivy Hall CRY LK"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:165",
+    "sourceRow": 165,
+    "pulledDate": "2026-04-07",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 8,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:166",
+    "sourceRow": 166,
+    "pulledDate": "2026-04-07",
+    "item": "Cross Body Bag black",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:167",
+    "sourceRow": 167,
+    "pulledDate": "2026-04-07",
+    "item": "Spacemen",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:168",
+    "sourceRow": 168,
+    "pulledDate": "2026-04-07",
+    "item": "Plug Sockets",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:169",
+    "sourceRow": 169,
+    "pulledDate": "2026-04-07",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:170",
+    "sourceRow": 170,
+    "pulledDate": "2026-04-07",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:171",
+    "sourceRow": 171,
+    "pulledDate": "2026-04-07",
+    "item": "Koozies black",
+    "qty": 8,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:172",
+    "sourceRow": 172,
+    "pulledDate": "2026-04-08",
+    "item": "Koozies black",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:173",
+    "sourceRow": 173,
+    "pulledDate": "2026-04-08",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:174",
+    "sourceRow": 174,
+    "pulledDate": "2026-04-08",
+    "item": "Gildan T-shirt White",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:175",
+    "sourceRow": 175,
+    "pulledDate": "2026-04-08",
+    "item": "Nice Tote black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:176",
+    "sourceRow": 176,
+    "pulledDate": "2026-04-08",
+    "item": "Denim Hat black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:177",
+    "sourceRow": 177,
+    "pulledDate": "2026-04-08",
+    "item": "Beanie multi",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:178",
+    "sourceRow": 178,
+    "pulledDate": "2026-04-09",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:179",
+    "sourceRow": 179,
+    "pulledDate": "2026-04-09",
+    "item": "Draw String Bag blue/black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:180",
+    "sourceRow": 180,
+    "pulledDate": "2026-04-09",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:181",
+    "sourceRow": 181,
+    "pulledDate": "2026-04-09",
+    "item": "Spacemen",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:182",
+    "sourceRow": 182,
+    "pulledDate": "2026-04-09",
+    "item": "Plug Sockets",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:183",
+    "sourceRow": 183,
+    "pulledDate": "2026-04-09",
+    "item": "Pins - Hijnx Black",
+    "qty": 15,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:184",
+    "sourceRow": 184,
+    "pulledDate": "2026-04-09",
+    "item": "Gator rainbow",
+    "qty": 7,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:185",
+    "sourceRow": 185,
+    "pulledDate": "2026-04-13",
+    "item": "Draw String Bag blue/black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:186",
+    "sourceRow": 186,
+    "pulledDate": "2026-04-13",
+    "item": "Pins - Hijnx Black",
+    "qty": 13,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:187",
+    "sourceRow": 187,
+    "pulledDate": "2026-04-13",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:188",
+    "sourceRow": 188,
+    "pulledDate": "2026-04-13",
+    "item": "Gildan T-shirt Neon Green",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:189",
+    "sourceRow": 189,
+    "pulledDate": "2026-04-14",
+    "item": "Draw String Bag blue/black",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:190",
+    "sourceRow": 190,
+    "pulledDate": "2026-04-14",
+    "item": "Gildan T-shirt White",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:191",
+    "sourceRow": 191,
+    "pulledDate": "2026-04-14",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:192",
+    "sourceRow": 192,
+    "pulledDate": "2026-04-15",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:193",
+    "sourceRow": 193,
+    "pulledDate": "2026-04-15",
+    "item": "Pins - Hijnx Black",
+    "qty": 10,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:194",
+    "sourceRow": 194,
+    "pulledDate": "2026-04-15",
+    "item": "Gildan T-shirt Neon Green",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:195",
+    "sourceRow": 195,
+    "pulledDate": "2026-04-15",
+    "item": "Gildan T-shirt Sky",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:196",
+    "sourceRow": 196,
+    "pulledDate": "2026-04-16",
+    "item": "Front Pouch Hoodie black",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Altius RLB"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:197",
+    "sourceRow": 197,
+    "pulledDate": "2026-04-16",
+    "item": "Front Pouch Hoodie grey",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Altius RLB"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:198",
+    "sourceRow": 198,
+    "pulledDate": "2026-04-17",
+    "item": "Pins - Spaceman",
+    "qty": 50,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Karma/420 weekend"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:199",
+    "sourceRow": 199,
+    "pulledDate": "2026-04-17",
+    "item": "Nice Tote white",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Karma/420 weekend"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:200",
+    "sourceRow": 200,
+    "pulledDate": "2026-04-17",
+    "item": "Jean Tote blue",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Karma/420 weekend"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:201",
+    "sourceRow": 201,
+    "pulledDate": "2026-04-17",
+    "item": "Koozies white",
+    "qty": 24,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Karma/420 weekend"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:202",
+    "sourceRow": 202,
+    "pulledDate": "2026-04-17",
+    "item": "Gildan T-shirt Natural",
+    "qty": 4,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Karma/420 weekend"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:203",
+    "sourceRow": 203,
+    "pulledDate": "2026-04-17",
+    "item": "Gildan T-shirt Blackberry",
+    "qty": 2,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Karma/420 weekend"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:204",
+    "sourceRow": 204,
+    "pulledDate": "2026-04-17",
+    "item": "Gildan T-shirt Cornsilk",
+    "qty": 1,
+    "pulledBy": "Wayne",
+    "purpose": "Event/Promo",
+    "notes": "Karma/420 weekend"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:205",
+    "sourceRow": 205,
+    "pulledDate": "2026-04-17",
+    "item": "Draw String Bag blue/black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:206",
+    "sourceRow": 206,
+    "pulledDate": "2026-04-17",
+    "item": "Nice Tote white",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:207",
+    "sourceRow": 207,
+    "pulledDate": "2026-04-17",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:208",
+    "sourceRow": 208,
+    "pulledDate": "2026-04-17",
+    "item": "Gildan T-shirt Sky",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:209",
+    "sourceRow": 209,
+    "pulledDate": "2026-04-17",
+    "item": "Pins - Spaceman",
+    "qty": 26,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:210",
+    "sourceRow": 210,
+    "pulledDate": "2026-04-17",
+    "item": "Spacemen",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:211",
+    "sourceRow": 211,
+    "pulledDate": "2026-04-17",
+    "item": "Plug Sockets",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:212",
+    "sourceRow": 212,
+    "pulledDate": "2026-04-20",
+    "item": "Pins - Spaceman",
+    "qty": 60,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": "Be Event"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:213",
+    "sourceRow": 213,
+    "pulledDate": "2026-04-20",
+    "item": "Gildan T-shirt Black",
+    "qty": 6,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": "Be Event"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:214",
+    "sourceRow": 214,
+    "pulledDate": "2026-04-20",
+    "item": "Jean Tote grey",
+    "qty": 1,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": "Be Event"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:215",
+    "sourceRow": 215,
+    "pulledDate": "2026-04-20",
+    "item": "Gildan T-shirt Neon Green",
+    "qty": 2,
+    "pulledBy": "Jenny",
+    "purpose": "Event/Promo",
+    "notes": "Be Event"
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:216",
+    "sourceRow": 216,
+    "pulledDate": "2026-04-21",
+    "item": "Gildan T-shirt Dark Heather",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:217",
+    "sourceRow": 217,
+    "pulledDate": "2026-04-21",
+    "item": "Jean Tote grey",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:218",
+    "sourceRow": 218,
+    "pulledDate": "2026-04-21",
+    "item": "Nice Tote white",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:219",
+    "sourceRow": 219,
+    "pulledDate": "2026-04-21",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:220",
+    "sourceRow": 220,
+    "pulledDate": "2026-04-21",
+    "item": "Denim Hat black",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:221",
+    "sourceRow": 221,
+    "pulledDate": "2026-04-21",
+    "item": "Beanie multi",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:222",
+    "sourceRow": 222,
+    "pulledDate": "2026-04-21",
+    "item": "Front Pouch Hoodie black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:223",
+    "sourceRow": 223,
+    "pulledDate": "2026-04-21",
+    "item": "Front Pouch Hoodie off white",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:224",
+    "sourceRow": 224,
+    "pulledDate": "2026-04-22",
+    "item": "Gildan T-shirt Black",
+    "qty": 6,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:225",
+    "sourceRow": 225,
+    "pulledDate": "2026-04-22",
+    "item": "Gildan T-shirt Cornsilk",
+    "qty": 3,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:226",
+    "sourceRow": 226,
+    "pulledDate": "2026-04-22",
+    "item": "Nice Tote white",
+    "qty": 2,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:227",
+    "sourceRow": 227,
+    "pulledDate": "2026-04-22",
+    "item": "Nice Tote black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:228",
+    "sourceRow": 228,
+    "pulledDate": "2026-04-24",
+    "item": "Gildan T-shirt Light Blue",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:229",
+    "sourceRow": 229,
+    "pulledDate": "2026-04-24",
+    "item": "Gildan T-shirt Cornsilk",
+    "qty": 5,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:230",
+    "sourceRow": 230,
+    "pulledDate": "2026-04-24",
+    "item": "Pins - Spaceman",
+    "qty": 10,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:231",
+    "sourceRow": 231,
+    "pulledDate": "2026-04-27",
+    "item": "Gildan T-shirt Black",
+    "qty": 4,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:232",
+    "sourceRow": 232,
+    "pulledDate": "2026-04-27",
+    "item": "Gildan T-shirt Antique Saphire",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:233",
+    "sourceRow": 233,
+    "pulledDate": "2026-04-27",
+    "item": "Gildan T-shirt Cornsilk",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:234",
+    "sourceRow": 234,
+    "pulledDate": "2026-04-27",
+    "item": "Pins - Spaceman",
+    "qty": 10,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:235",
+    "sourceRow": 235,
+    "pulledDate": "2026-04-28",
+    "item": "Gildan T-shirt Azalea",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:236",
+    "sourceRow": 236,
+    "pulledDate": "2026-04-28",
+    "item": "Gildan T-shirt Antique Saphire",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:237",
+    "sourceRow": 237,
+    "pulledDate": "2026-04-28",
+    "item": "Gildan T-shirt Black",
+    "qty": 1,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  },
+  {
+    "sourceRef": "swag inventory working 2 (1).xlsx:reporting sheet:238",
+    "sourceRow": 238,
+    "pulledDate": "2026-04-28",
+    "item": "Koozies white",
+    "qty": 12,
+    "pulledBy": "Jason",
+    "purpose": "Delivery/Client",
+    "notes": ""
+  }
+]
