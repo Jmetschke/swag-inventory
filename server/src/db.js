@@ -1,15 +1,41 @@
-const path = require("path");
-const fs = require("fs");
-const Database = require("better-sqlite3");
+const { createClient } = require("@libsql/client");
 const seedItems = require("./seed-items.json");
 
-const dbPath = process.env.SQLITE_PATH || path.join(__dirname, "..", "data", "swag-inventory.sqlite");
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-const db = new Database(dbPath);
-db.pragma("journal_mode = WAL");
+const url = process.env.TURSO_DATABASE_URL;
+const authToken = process.env.TURSO_DATABASE_TOKEN;
 
-function initDb() {
-  db.exec(`
+if (!url || !authToken) {
+  throw new Error("Missing TURSO_DATABASE_URL or TURSO_DATABASE_TOKEN environment variable");
+}
+
+const db = createClient({ url, authToken });
+
+function normalizeValue(value) {
+  if (typeof value === "bigint") {
+    return Number.isSafeInteger(Number(value)) ? Number(value) : value.toString();
+  }
+  return value;
+}
+
+function normalizeRow(row) {
+  return Object.fromEntries(Object.entries(row).map(([key, value]) => [key, normalizeValue(value)]));
+}
+
+async function all(sql, args = []) {
+  const result = await db.execute({ sql, args });
+  return result.rows.map(normalizeRow);
+}
+
+async function run(sql, args = []) {
+  const result = await db.execute({ sql, args });
+  return {
+    lastInsertRowid: normalizeValue(result.lastInsertRowid),
+    rowsAffected: normalizeValue(result.rowsAffected)
+  };
+}
+
+async function initDb() {
+  await db.executeMultiple(`
     CREATE TABLE IF NOT EXISTS items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,
@@ -52,12 +78,15 @@ function initDb() {
     );
   `);
 
-  const existing = db.prepare("SELECT COUNT(*) AS count FROM items").get().count;
+  const [{ count: existing }] = await all("SELECT COUNT(*) AS count FROM items");
   if (existing === 0) {
-    const insert = db.prepare("INSERT INTO items (name, starting_quantity) VALUES (?, ?)");
-    const tx = db.transaction(() => seedItems.forEach(i => insert.run(i.name, i.startingQuantity || 0)));
-    tx();
+    for (const item of seedItems) {
+      await run("INSERT INTO items (name, starting_quantity) VALUES (?, ?)", [
+        item.name,
+        item.startingQuantity || 0
+      ]);
+    }
   }
 }
 
-module.exports = { db, initDb };
+module.exports = { db, initDb, all, run };

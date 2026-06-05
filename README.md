@@ -14,6 +14,13 @@ This app skeleton converts the uploaded spreadsheet logic into a small Node/Expr
 
 ## Run locally
 
+Create a `.env` file with your Turso connection values:
+
+```bash
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_DATABASE_TOKEN=your-token
+```
+
 ```bash
 npm install
 npm start
@@ -31,7 +38,7 @@ http://localhost:3000
 2. Add edit/delete buttons for pulls and receipts.
 3. Add printable weekly report and inventory count pages.
 4. Add low-stock/reorder alerts.
-5. Swap SQLite for Turso using `@libsql/client` if you want the app shared across Render services.
+5. Add import/export tools for one-time inventory migrations.
 
 ## Main API routes
 
