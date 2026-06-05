@@ -34,6 +34,14 @@ async function run(sql, args = []) {
   };
 }
 
+async function runBatch(statements) {
+  const results = await db.batch(statements, "write");
+  return results.map(result => ({
+    lastInsertRowid: normalizeValue(result.lastInsertRowid),
+    rowsAffected: normalizeValue(result.rowsAffected)
+  }));
+}
+
 async function initDb() {
   await db.executeMultiple(`
     CREATE TABLE IF NOT EXISTS items (
@@ -89,4 +97,4 @@ async function initDb() {
   }
 }
 
-module.exports = { db, initDb, all, run };
+module.exports = { db, initDb, all, run, runBatch };
