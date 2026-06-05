@@ -17,6 +17,7 @@ button { cursor: pointer; font-weight: 700; }
 .line-items-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 600; }
 .line-item { display: grid; grid-template-columns: minmax(180px, 1fr) 110px auto; gap: 8px; align-items: end; }
 .inline-fields { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.status-line { min-height: 20px; margin: 8px 0 0; color: #444; }
 table { width: 100%; border-collapse: collapse; margin-top: 12px; }
 th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
 th { background: #f0f2f5; }

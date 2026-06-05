@@ -29,6 +29,105 @@ async function createPulls({ items, pulledDate, pulledBy, purpose, notes }) {
   })));
 }
 
+function entryKey(entry) {
+  return [
+    entry.pulledDate,
+    entry.itemId,
+    entry.qty,
+    entry.pulledBy || "",
+    entry.purpose,
+    entry.notes || ""
+  ].join("\u001f");
+}
+
+function listEntries(limit = 1000) {
+  return all(`
+    SELECT
+      p.id,
+      p.pulled_date AS date,
+      i.name AS itemPulled,
+      p.qty,
+      p.pulled_by AS pulledBy,
+      p.purpose,
+      p.notes,
+      p.source_ref AS sourceRef
+    FROM inventory_pulls p
+    JOIN items i ON i.id = p.item_id
+    ORDER BY p.pulled_date DESC, p.id DESC
+    LIMIT ?
+  `, [limit]);
+}
+
+async function importPullEntries(entries) {
+  const items = await listItems();
+  const itemByName = new Map(items.map(item => [item.name, item]));
+  const missingItems = [...new Set(entries.map(entry => entry.item).filter(item => !itemByName.has(item)))];
+  if (missingItems.length) {
+    const err = new Error(`Missing item(s): ${missingItems.join(", ")}`);
+    err.status = 400;
+    throw err;
+  }
+
+  const normalized = entries.map(entry => ({
+    ...entry,
+    itemId: itemByName.get(entry.item).id,
+    qty: Number(entry.qty)
+  }));
+
+  const existingRefs = new Set(
+    (await all("SELECT source_ref AS sourceRef FROM inventory_pulls WHERE source_ref IS NOT NULL"))
+      .map(row => row.sourceRef)
+  );
+  const existingRows = await all(`
+    SELECT
+      p.pulled_date AS pulledDate,
+      p.item_id AS itemId,
+      p.qty,
+      p.pulled_by AS pulledBy,
+      p.purpose,
+      p.notes
+    FROM inventory_pulls p
+  `);
+  const existingKeys = new Set(existingRows.map(entryKey));
+  const seenKeys = new Set();
+  const skipped = [];
+  const newEntries = [];
+
+  for (const entry of normalized) {
+    const key = entryKey(entry);
+    if (existingRefs.has(entry.sourceRef) || existingKeys.has(key) || seenKeys.has(key)) {
+      skipped.push(entry);
+      continue;
+    }
+    seenKeys.add(key);
+    newEntries.push(entry);
+  }
+
+  if (newEntries.length) {
+    await runBatch(newEntries.map(entry => ({
+      sql: `INSERT INTO inventory_pulls
+        (item_id, qty, pulled_date, pulled_by, purpose, notes, source_ref)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        entry.itemId,
+        entry.qty,
+        entry.pulledDate,
+        entry.pulledBy || null,
+        entry.purpose,
+        entry.notes || null,
+        entry.sourceRef
+      ]
+    })));
+  }
+
+  return {
+    inserted: newEntries.length,
+    skipped: skipped.length,
+    total: entries.length,
+    missingItems
+  };
+}
+
 function createReceipt({ itemId, qty, receivedDate, receivedBy, notes }) {
   return run(`INSERT INTO inventory_receipts (item_id, qty, received_date, received_by, notes)
     VALUES (?, ?, ?, ?, ?)`, [itemId, qty, receivedDate, receivedBy || null, notes || null]);
@@ -192,4 +291,4 @@ function getPullLog(limit = 500) {
   `, [limit]);
 }
 
-module.exports = { listItems, createItem, createPull, createPulls, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };
+module.exports = { listItems, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };

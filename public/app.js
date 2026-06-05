@@ -10,6 +10,7 @@ loadItems().then(() => {
   runWeeklyReport();
   refreshAudit();
   refreshAuditHistory();
+  refreshEntries();
 });
 
 async function action(url, options) {
@@ -54,11 +55,13 @@ function refreshItemSelects() {
 
 function addLineItem(containerId, minQty) {
   const container = document.getElementById(containerId);
+  const itemLabel = containerId === 'pullItems' ? 'Item Pulled' : 'Item';
+  const qtyLabel = containerId === 'pullItems' ? 'QTY' : 'QTY';
   const row = document.createElement('div');
   row.className = 'line-item';
   row.innerHTML = `
-    <label>Item <select name="itemId" required>${itemOptions()}</select></label>
-    <label>QTY <input type="number" name="qty" min="${minQty}" required /></label>
+    <label>${itemLabel} <select name="itemId" required>${itemOptions()}</select></label>
+    <label>${qtyLabel} <input type="number" name="qty" min="${minQty}" required /></label>
     <button type="button" class="secondary remove-line">Remove</button>
   `;
   row.querySelector('.remove-line').addEventListener('click', () => {
@@ -94,6 +97,8 @@ document.querySelectorAll('.tab-button').forEach(button => {
     if (button.dataset.tab === 'auditTab') {
       await refreshAudit();
       await refreshAuditHistory();
+    } else if (button.dataset.tab === 'entriesTab') {
+      await refreshEntries();
     }
   });
 });
@@ -118,7 +123,7 @@ document.getElementById('pullForm').addEventListener('submit', async (e) => {
   body.items = getLineItems('pullItems');
   await postJson('/api/pulls', body);
   e.target.reset(); resetLineItems('pullItems', 1); document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
-  await refreshInventory(); await refreshAudit(); await runWeeklyReport();
+  await refreshInventory(); await refreshAudit(); await runWeeklyReport(); await refreshEntries();
 });
 
 document.getElementById('receiptForm').addEventListener('submit', async (e) => {
@@ -132,6 +137,8 @@ document.getElementById('receiptForm').addEventListener('submit', async (e) => {
 
 document.getElementById('refresh').addEventListener('click', refreshInventory);
 document.getElementById('runWeekly').addEventListener('click', runWeeklyReport);
+document.getElementById('refreshEntries').addEventListener('click', refreshEntries);
+document.getElementById('uploadEntries').addEventListener('click', uploadEntriesFile);
 document.getElementById('printInventory').addEventListener('click', () => {
   const asOf = document.getElementById('asOf').value || today;
   const startDate = document.getElementById('inventoryStart').value || asOf;
@@ -172,6 +179,47 @@ async function refreshInventory() {
   const params = new URLSearchParams({ asOf, startDate, endDate });
   const rows = await action(`/api/inventory?${params}`);
   renderTable('inventoryTable', ['Item','Starting','Received','Pulled','Used In Range','Calculated On Hand'], rows.map(r => [r.name, r.startingQuantity, r.totalReceived, r.totalPulled, r.pulledInRange, r.calculatedOnHand]));
+}
+
+async function refreshEntries() {
+  const entries = await action('/api/entries?limit=2000');
+  renderTable('entriesTable', ['Date','Item Pulled','QTY','Pulled By','Purpose','Notes'], entries.map(entry => [
+    entry.date,
+    entry.itemPulled,
+    entry.qty,
+    entry.pulledBy || '',
+    entry.purpose,
+    entry.notes || ''
+  ]));
+}
+
+async function uploadEntriesFile() {
+  const input = document.getElementById('entriesUpload');
+  const status = document.getElementById('entriesUploadStatus');
+  const file = input.files[0];
+  if (!file) {
+    status.textContent = 'Choose an .xlsx file first.';
+    return;
+  }
+  status.textContent = 'Reading entries...';
+  try {
+    const result = await action('/api/entries/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'X-File-Name': file.name
+      },
+      body: await file.arrayBuffer()
+    });
+    status.textContent = `Inserted ${result.inserted} new entries. Skipped ${result.skipped} duplicates.`;
+    input.value = '';
+    await refreshEntries();
+    await refreshInventory();
+    await refreshAudit();
+    await runWeeklyReport();
+  } catch (err) {
+    status.textContent = err.message;
+  }
 }
 
 async function refreshAudit() {

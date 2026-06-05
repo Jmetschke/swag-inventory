@@ -4,6 +4,7 @@ const cors = require("cors");
 const { initDb } = require("./db");
 const q = require("./queries");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
+const { parseReportingWorkbook } = require("./reportingWorkbook");
 
 const app = express();
 app.use(cors());
@@ -74,6 +75,38 @@ app.post("/api/pulls", async (req, res, next) => {
     }
     const results = await q.createPulls({ ...req.body, items });
     res.status(201).json({ ids: results.map(result => result.lastInsertRowid) });
+  } catch (err) { next(err); }
+});
+
+app.get("/api/entries", async (req, res, next) => {
+  try {
+    res.json(await q.listEntries(Number(req.query.limit || 1000)));
+  } catch (err) { next(err); }
+});
+
+app.post("/api/entries/upload", express.raw({
+  type: [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/octet-stream"
+  ],
+  limit: "10mb"
+}), async (req, res, next) => {
+  try {
+    if (!req.body || !req.body.length) {
+      const err = new Error("Upload an .xlsx file");
+      err.status = 400;
+      throw err;
+    }
+    const fileName = req.get("x-file-name") || "uploaded reporting table.xlsx";
+    const entries = parseReportingWorkbook(req.body, fileName);
+    const invalidPurpose = entries.find(entry => !["Event/Promo", "Delivery/Client", "Employee", "Other"].includes(entry.purpose));
+    if (invalidPurpose) {
+      const err = new Error(`Unsupported purpose '${invalidPurpose.purpose}' on row ${invalidPurpose.sourceRow}`);
+      err.status = 400;
+      throw err;
+    }
+    const result = await q.importPullEntries(entries);
+    res.status(201).json(result);
   } catch (err) { next(err); }
 });
 
