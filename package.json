@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "node server/src/server.js",
-    "dev": "node server/src/server.js"
+    "dev": "node server/src/server.js",
+    "sync:inventory-counts": "node server/scripts/apply-inventory-counts.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",

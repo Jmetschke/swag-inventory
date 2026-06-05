@@ -32,6 +32,16 @@ Open:
 http://localhost:3000
 ```
 
+## Apply 2026-05-11 spreadsheet counts
+
+The baseline item counts from `5_11_26 inventory.xlsx` are stored in `server/src/inventory-counts-2026-05-11.json` and reflected in `server/src/seed-items.json`.
+
+To apply those counts to an existing Turso database, set `TURSO_DATABASE_URL` and `TURSO_DATABASE_TOKEN`, then run:
+
+```bash
+npm run sync:inventory-counts
+```
+
 ## Suggested next refinements
 
 1. Add user login/roles.
