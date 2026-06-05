@@ -7,14 +7,18 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <header><h1>Swag Inventory Tracker</h1><p>Spreadsheet logic converted into inventory pulls, receipts, weekly usage, and calculated on-hand counts.</p></header>
+  <header>
+    <a class="top-link" href="https://manufacturing-tracker.onrender.com" target="_blank" rel="noopener">Manufacturing Tracker</a>
+    <h1>Swag Inventory Tracker</h1>
+    <p>Spreadsheet logic converted into inventory pulls, receipts, weekly usage, and calculated on-hand counts.</p>
+  </header>
   <nav class="tabs" aria-label="Inventory sections">
     <button class="tab-button active" data-tab="inventoryTab" type="button">Inventory</button>
     <button class="tab-button" data-tab="entriesTab" type="button">Entries</button>
     <button class="tab-button" data-tab="auditTab" type="button">Audit</button>
   </nav>
   <main id="inventoryTab" class="tab-panel active">
-    <section class="card">
+    <section class="card primary-entry">
       <h2>Pull Items</h2>
       <form id="pullForm">
         <label>Date <input type="date" name="pulledDate" required /></label>
@@ -36,33 +40,14 @@
       </form>
     </section>
 
-    <section class="card">
+    <section class="card action-card">
       <h2>Add Inventory Item</h2>
-      <form id="itemForm">
-        <label>Item Name <input name="name" required /></label>
-        <label>SKU <input name="sku" /></label>
-        <label>Starting QTY <input type="number" name="startingQuantity" min="0" value="0" required /></label>
-        <label>Reorder Level <input type="number" name="reorderLevel" min="0" value="0" /></label>
-        <label>Starting Date <input type="date" name="startingDate" /></label>
-        <button>Add Item</button>
-      </form>
+      <button id="openItemDialog" type="button">Add Item</button>
     </section>
 
-    <section class="card">
+    <section class="card action-card">
       <h2>Receive Items</h2>
-      <form id="receiptForm">
-        <label>Date <input type="date" name="receivedDate" required /></label>
-        <div>
-          <div class="line-items-header">
-            <span>Items</span>
-            <button type="button" id="addReceiptItem" class="secondary">Add Item</button>
-          </div>
-          <div id="receiptItems" class="line-items"></div>
-        </div>
-        <label>Received By <input name="receivedBy" /></label>
-        <label>Notes <input name="notes" /></label>
-        <button>Save Receipt</button>
-      </form>
+      <button id="openReceiptDialog" type="button">Receive Items</button>
     </section>
 
     <section class="card wide">
@@ -121,6 +106,39 @@
       <table id="auditHistoryTable"></table>
     </section>
   </main>
+  <dialog id="itemDialog">
+    <div class="dialog-header">
+      <h2>Add Inventory Item</h2>
+      <button id="closeItemDialog" type="button" class="secondary">Close</button>
+    </div>
+    <form id="itemForm">
+      <label>Item Name <input name="name" required /></label>
+      <label>SKU <input name="sku" /></label>
+      <label>Starting QTY <input type="number" name="startingQuantity" min="0" value="0" required /></label>
+      <label>Reorder Level <input type="number" name="reorderLevel" min="0" value="0" /></label>
+      <label>Starting Date <input type="date" name="startingDate" /></label>
+      <button>Add Item</button>
+    </form>
+  </dialog>
+  <dialog id="receiptDialog">
+    <div class="dialog-header">
+      <h2>Receive Items</h2>
+      <button id="closeReceiptDialog" type="button" class="secondary">Close</button>
+    </div>
+    <form id="receiptForm">
+      <label>Date <input type="date" name="receivedDate" required /></label>
+      <div>
+        <div class="line-items-header">
+          <span>Items</span>
+          <button type="button" id="addReceiptItem" class="secondary">Add Item</button>
+        </div>
+        <div id="receiptItems" class="line-items"></div>
+      </div>
+      <label>Received By <input name="receivedBy" /></label>
+      <label>Notes <input name="notes" /></label>
+      <button>Save Receipt</button>
+    </form>
+  </dialog>
   <dialog id="auditDialog">
     <div class="dialog-header">
       <h2 id="auditDialogTitle">Audit Details</h2>

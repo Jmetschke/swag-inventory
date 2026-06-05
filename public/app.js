@@ -89,6 +89,10 @@ async function postJson(url, body) {
 
 document.getElementById('addPullItem').addEventListener('click', () => addLineItem('pullItems', 1));
 document.getElementById('addReceiptItem').addEventListener('click', () => addLineItem('receiptItems', 0));
+document.getElementById('openItemDialog').addEventListener('click', () => document.getElementById('itemDialog').showModal());
+document.getElementById('openReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').showModal());
+document.getElementById('closeItemDialog').addEventListener('click', () => document.getElementById('itemDialog').close());
+document.getElementById('closeReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').close());
 
 document.querySelectorAll('.tab-button').forEach(button => {
   button.addEventListener('click', async () => {
@@ -111,6 +115,7 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
   await postJson('/api/items', body);
   e.target.reset();
   e.target.querySelector('input[name="startingDate"]').value = today;
+  document.getElementById('itemDialog').close();
   await loadItems();
   await refreshInventory();
   await refreshAudit();
@@ -132,6 +137,7 @@ document.getElementById('receiptForm').addEventListener('submit', async (e) => {
   body.items = getLineItems('receiptItems');
   await postJson('/api/receipts', body);
   e.target.reset(); resetLineItems('receiptItems', 0); document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
+  document.getElementById('receiptDialog').close();
   await refreshInventory(); await refreshAudit();
 });
 
@@ -280,6 +286,7 @@ function printReport(title, subtitle, tableId) {
         <title>${escapeHtml(title)}</title>
         <style>
           body { font-family: Arial, sans-serif; color: #222; margin: 24px; }
+          a { display: inline-block; margin-bottom: 10px; color: #1d4ed8; font-weight: 700; text-decoration: none; }
           h1 { margin: 0 0 6px; font-size: 22px; }
           p { margin: 0 0 18px; color: #555; }
           table { width: 100%; border-collapse: collapse; }
@@ -288,6 +295,7 @@ function printReport(title, subtitle, tableId) {
         </style>
       </head>
       <body>
+        <a href="https://manufacturing-tracker.onrender.com" target="_blank" rel="noopener">Manufacturing Tracker</a>
         <h1>${escapeHtml(title)}</h1>
         <p>${escapeHtml(subtitle)}</p>
         ${table.outerHTML}

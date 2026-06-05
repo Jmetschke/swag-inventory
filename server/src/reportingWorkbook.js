@@ -90,7 +90,11 @@ function parseWorkbookSheets(workbookXml, relsXml) {
     const attrs = parseAttributes(match[1]);
     const relId = attrs["r:id"];
     const target = rels.get(relId);
-    const filePath = target.startsWith("/") ? target.slice(1) : path.posix.join("xl", target);
+    const filePath = target.startsWith("/")
+      ? target.slice(1)
+      : target.startsWith("xl/")
+        ? target
+        : path.posix.join("xl", target);
     return { name: attrs.name, path: filePath };
   });
 }
