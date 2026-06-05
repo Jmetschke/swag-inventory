@@ -47,8 +47,15 @@ function createPhysicalCount({ itemId, countedQty, countedDate, countedBy, notes
     VALUES (?, ?, ?, ?, ?)`, [itemId, countedQty, countedDate, countedBy || null, notes || null]);
 }
 
+async function createPhysicalCounts({ counts, countedDate, countedBy, notes }) {
+  return runBatch(counts.map(count => ({
+    sql: `INSERT INTO physical_counts (item_id, counted_qty, counted_date, counted_by, notes)
+      VALUES (?, ?, ?, ?, ?)`,
+    args: [count.itemId, count.countedQty, countedDate, countedBy || null, notes || null]
+  })));
+}
+
 function getCurrentInventory(asOfDate, startDate, endDate) {
-  // Spreadsheet equivalent of: calculated count = prior count + items received - end-of-week use totals.
   return all(`
     SELECT
       i.id,
@@ -57,13 +64,27 @@ function getCurrentInventory(asOfDate, startDate, endDate) {
       COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id AND r.received_date <= ?), 0) AS totalReceived,
       COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date <= ?), 0) AS totalPulled,
       COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date BETWEEN ? AND ?), 0) AS pulledInRange,
-      i.starting_quantity
-        + COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id AND r.received_date <= ?), 0)
-        - COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date <= ?), 0) AS calculatedOnHand
+      (SELECT pc.counted_qty FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1) AS lastCountedQty,
+      (SELECT pc.counted_date FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1) AS lastCountedDate,
+      COALESCE((SELECT pc.counted_qty FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1), i.starting_quantity)
+        + COALESCE((
+          SELECT SUM(r.qty)
+          FROM inventory_receipts r
+          WHERE r.item_id = i.id
+            AND r.received_date <= ?
+            AND r.received_date > COALESCE((SELECT pc.counted_date FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1), '0000-00-00')
+        ), 0)
+        - COALESCE((
+          SELECT SUM(p.qty)
+          FROM inventory_pulls p
+          WHERE p.item_id = i.id
+            AND p.pulled_date <= ?
+            AND p.pulled_date > COALESCE((SELECT pc.counted_date FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1), '0000-00-00')
+        ), 0) AS calculatedOnHand
     FROM items i
     WHERE i.active = 1
     ORDER BY i.name
-  `, [asOfDate, asOfDate, startDate, endDate, asOfDate, asOfDate]);
+  `, [asOfDate, asOfDate, startDate, endDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate]);
 }
 
 function getWeeklyUsage({ startDate, endDate }) {
@@ -112,4 +133,4 @@ function getPullLog(limit = 500) {
   `, [limit]);
 }
 
-module.exports = { listItems, createItem, createPull, createPulls, createReceipt, createReceipts, createPhysicalCount, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };
+module.exports = { listItems, createItem, createPull, createPulls, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };

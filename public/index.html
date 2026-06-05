@@ -8,7 +8,11 @@
 </head>
 <body>
   <header><h1>Swag Inventory Tracker</h1><p>Spreadsheet logic converted into inventory pulls, receipts, weekly usage, and calculated on-hand counts.</p></header>
-  <main>
+  <nav class="tabs" aria-label="Inventory sections">
+    <button class="tab-button active" data-tab="inventoryTab" type="button">Inventory</button>
+    <button class="tab-button" data-tab="auditTab" type="button">Audit</button>
+  </nav>
+  <main id="inventoryTab" class="tab-panel active">
     <section class="card">
       <h2>Pull Items</h2>
       <form id="pullForm">
@@ -77,6 +81,21 @@
       <label>End <input id="weekEnd" type="date" /></label>
       <button id="runWeekly">Run Weekly Report</button>
       <table id="weeklyTable"></table>
+    </section>
+  </main>
+
+  <main id="auditTab" class="tab-panel">
+    <section class="card wide">
+      <h2>Inventory Audit</h2>
+      <form id="auditForm">
+        <div class="inline-fields">
+          <label>Audit Date <input id="auditDate" name="countedDate" type="date" required /></label>
+          <label>Counted By <input name="countedBy" /></label>
+          <label>Notes <input name="notes" /></label>
+          <button>Submit Audit</button>
+        </div>
+        <table id="auditTable"></table>
+      </form>
     </section>
   </main>
   <script src="/app.js"></script>

@@ -100,6 +100,34 @@ app.post("/api/physical-counts", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+app.post("/api/audits", async (req, res, next) => {
+  try {
+    requireFields(req.body, ["countedDate"]);
+    const counts = Array.isArray(req.body.counts) ? req.body.counts : [];
+    const normalized = counts.map(count => ({
+      itemId: Number(count.itemId),
+      countedQty: Number(count.countedQty)
+    }));
+    const invalid = normalized.find(count =>
+      !Number.isInteger(count.itemId) ||
+      count.itemId <= 0 ||
+      !Number.isFinite(count.countedQty) ||
+      count.countedQty < 0
+    );
+    if (invalid) {
+      const err = new Error("Audit counts must include a valid itemId and non-negative countedQty");
+      err.status = 400;
+      throw err;
+    }
+    if (!normalized.length) {
+      res.status(201).json({ ids: [] });
+      return;
+    }
+    const results = await q.createPhysicalCounts({ ...req.body, counts: normalized });
+    res.status(201).json({ ids: results.map(result => result.lastInsertRowid) });
+  } catch (err) { next(err); }
+});
+
 app.get("/api/inventory", async (req, res, next) => {
   try {
     const asOf = req.query.asOf || new Date().toISOString().slice(0, 10);
