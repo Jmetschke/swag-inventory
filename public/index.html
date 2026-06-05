@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swag Inventory Tracker</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header><h1>Swag Inventory Tracker</h1><p>Spreadsheet logic converted into inventory pulls, receipts, weekly usage, and calculated on-hand counts.</p></header>
+  <main>
+    <section class="card">
+      <h2>Pull Items</h2>
+      <form id="pullForm">
+        <label>Date <input type="date" name="pulledDate" required /></label>
+        <label>Item <select name="itemId" required></select></label>
+        <label>QTY <input type="number" name="qty" min="1" required /></label>
+        <label>Pulled By <input name="pulledBy" /></label>
+        <label>Purpose
+          <select name="purpose">
+            <option>Delivery/Client</option><option>Event/Promo</option><option>Employee</option><option>Other</option>
+          </select>
+        </label>
+        <label>Notes <input name="notes" /></label>
+        <button>Save Pull</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Receive Items</h2>
+      <form id="receiptForm">
+        <label>Date <input type="date" name="receivedDate" required /></label>
+        <label>Item <select name="itemId" required></select></label>
+        <label>QTY <input type="number" name="qty" min="0" required /></label>
+        <label>Received By <input name="receivedBy" /></label>
+        <label>Notes <input name="notes" /></label>
+        <button>Save Receipt</button>
+      </form>
+    </section>
+
+    <section class="card wide">
+      <h2>Calculated Inventory</h2>
+      <label>As of <input id="asOf" type="date" /></label>
+      <button id="refresh">Refresh</button>
+      <table id="inventoryTable"></table>
+    </section>
+
+    <section class="card wide">
+      <h2>Weekly Usage Report</h2>
+      <label>Start <input id="weekStart" type="date" /></label>
+      <label>End <input id="weekEnd" type="date" /></label>
+      <button id="runWeekly">Run Weekly Report</button>
+      <table id="weeklyTable"></table>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

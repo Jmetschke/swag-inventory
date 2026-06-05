@@ -1,0 +1,294 @@
+[
+  {
+    "name": "Sweat Pants grey",
+    "startingQuantity": 3
+  },
+  {
+    "name": "Shorts black",
+    "startingQuantity": 15
+  },
+  {
+    "name": "Zip-up Hoodie grey",
+    "startingQuantity": 0
+  },
+  {
+    "name": "1/4\" Zip grey/black",
+    "startingQuantity": 15
+  },
+  {
+    "name": "1/4\" Zip blue",
+    "startingQuantity": 0
+  },
+  {
+    "name": "1/4\" Zip black",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Tie-Dye T-Shirt",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gator grey/black",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Bucket Hat black",
+    "startingQuantity": 10
+  },
+  {
+    "name": "Bucket Hat blue",
+    "startingQuantity": 2
+  },
+  {
+    "name": "Bucket Hat white",
+    "startingQuantity": 2
+  },
+  {
+    "name": "Trucker Hat black",
+    "startingQuantity": 9
+  },
+  {
+    "name": "Trucker Hat blue",
+    "startingQuantity": 1
+  },
+  {
+    "name": "Trucker Hat white",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Draw String Bag blue/black",
+    "startingQuantity": 12
+  },
+  {
+    "name": "Thin Tote black",
+    "startingQuantity": 4
+  },
+  {
+    "name": "Thin Tote blue",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Cross Body Bag black",
+    "startingQuantity": 6
+  },
+  {
+    "name": "Beanie multi",
+    "startingQuantity": 206
+  },
+  {
+    "name": "Beanie boxed",
+    "startingQuantity": 192
+  },
+  {
+    "name": "Water Bottle white hijnx",
+    "startingQuantity": 60
+  },
+  {
+    "name": "Note Book multi",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gator rainbow",
+    "startingQuantity": 33
+  },
+  {
+    "name": "Magnet hijnx",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Shirt-space T-shirt black",
+    "startingQuantity": 3
+  },
+  {
+    "name": "Shirt-space T-shirt tan",
+    "startingQuantity": 3
+  },
+  {
+    "name": "Shirt-space T-shirt grey",
+    "startingQuantity": 14
+  },
+  {
+    "name": "Front Pouch Hoodie black",
+    "startingQuantity": 28
+  },
+  {
+    "name": "Front Pouch Hoodie grey",
+    "startingQuantity": 7
+  },
+  {
+    "name": "Front Pouch Hoodie off white",
+    "startingQuantity": 8
+  },
+  {
+    "name": "Front Pouch Hoodie purple",
+    "startingQuantity": 3
+  },
+  {
+    "name": "Nice Tote white",
+    "startingQuantity": 26
+  },
+  {
+    "name": "Nice Tote black",
+    "startingQuantity": 20
+  },
+  {
+    "name": "String Bag no pocket black",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Jean Tote blue",
+    "startingQuantity": 3
+  },
+  {
+    "name": "Jean Tote grey",
+    "startingQuantity": 5
+  },
+  {
+    "name": "Tiny Backpack black",
+    "startingQuantity": 31
+  },
+  {
+    "name": "Tiny Backpack beige",
+    "startingQuantity": 18
+  },
+  {
+    "name": "thin gator beige",
+    "startingQuantity": 36
+  },
+  {
+    "name": "thin gator green",
+    "startingQuantity": 36
+  },
+  {
+    "name": "Koozies black",
+    "startingQuantity": 60
+  },
+  {
+    "name": "Koozies white",
+    "startingQuantity": 70
+  },
+  {
+    "name": "Amazon T-shirts black",
+    "startingQuantity": 9
+  },
+  {
+    "name": "printed tote black",
+    "startingQuantity": 9
+  },
+  {
+    "name": "Pens white",
+    "startingQuantity": 160
+  },
+  {
+    "name": "Denim Hat black",
+    "startingQuantity": 21
+  },
+  {
+    "name": "5 Below no pouch hoodie black",
+    "startingQuantity": 4
+  },
+  {
+    "name": "5 below Sweatshirt grey",
+    "startingQuantity": 6
+  },
+  {
+    "name": "5 Below no pouch hoodie grey",
+    "startingQuantity": 2
+  },
+  {
+    "name": "5 below Sweatshirt black",
+    "startingQuantity": 1
+  },
+  {
+    "name": "Gildan T-shirt Natural",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Ice Grey",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt White",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Dark Heather",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Coral Silk",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Azalea",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Blackberry",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Sweatshirt Green",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Denim Hat Blue",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Light Blue",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Sky",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Neon Green",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Spacemen",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Plug Sockets",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Pins - Hijnx Black",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Pins - Spaceman",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Pins - Alpha",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Pins - Rex",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Pins - Zuul",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Black",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Antique Saphire",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Berry",
+    "startingQuantity": 0
+  },
+  {
+    "name": "Gildan T-shirt Cornsilk",
+    "startingQuantity": 0
+  }
+]

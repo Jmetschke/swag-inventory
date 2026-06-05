@@ -1,0 +1,13 @@
+body { font-family: Arial, sans-serif; margin: 0; background: #f6f7f9; color: #222; }
+header { padding: 24px; background: white; border-bottom: 1px solid #ddd; }
+main { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 16px; padding: 16px; }
+.card { background: white; padding: 16px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.wide { grid-column: 1 / -1; }
+form { display: grid; gap: 10px; }
+label { display: grid; gap: 4px; font-weight: 600; }
+input, select, button { padding: 10px; font-size: 15px; }
+button { cursor: pointer; font-weight: 700; }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+th { background: #f0f2f5; }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; } }
