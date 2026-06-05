@@ -19,25 +19,76 @@ function requireFields(body, fields) {
   }
 }
 
+function normalizeLineItems(body) {
+  const items = Array.isArray(body.items) ? body.items : [{ itemId: body.itemId, qty: body.qty }];
+  const normalized = items
+    .map(item => ({ itemId: Number(item.itemId), qty: Number(item.qty) }))
+    .filter(item => Number.isFinite(item.itemId) || Number.isFinite(item.qty));
+
+  if (!normalized.length) {
+    const err = new Error("At least one item is required");
+    err.status = 400;
+    throw err;
+  }
+
+  const invalid = normalized.find(item => !Number.isInteger(item.itemId) || item.itemId <= 0 || !Number.isFinite(item.qty));
+  if (invalid) {
+    const err = new Error("Each item must include a valid itemId and qty");
+    err.status = 400;
+    throw err;
+  }
+
+  return normalized;
+}
+
 app.get("/api/items", async (req, res, next) => {
   try {
     res.json(await q.listItems());
   } catch (err) { next(err); }
 });
 
+app.post("/api/items", async (req, res, next) => {
+  try {
+    requireFields(req.body, ["name"]);
+    const startingQuantity = Number(req.body.startingQuantity || 0);
+    const reorderLevel = Number(req.body.reorderLevel || 0);
+    if (!Number.isFinite(startingQuantity) || startingQuantity < 0 || !Number.isFinite(reorderLevel) || reorderLevel < 0) {
+      const err = new Error("Starting quantity and reorder level must be non-negative numbers");
+      err.status = 400;
+      throw err;
+    }
+    const result = await q.createItem({ ...req.body, startingQuantity, reorderLevel });
+    res.status(201).json({ id: result.lastInsertRowid });
+  } catch (err) { next(err); }
+});
+
 app.post("/api/pulls", async (req, res, next) => {
   try {
-    requireFields(req.body, ["itemId", "qty", "pulledDate", "purpose"]);
-    const result = await q.createPull(req.body);
-    res.status(201).json({ id: result.lastInsertRowid });
+    requireFields(req.body, ["pulledDate", "purpose"]);
+    const items = normalizeLineItems(req.body);
+    const invalid = items.find(item => item.qty <= 0);
+    if (invalid) {
+      const err = new Error("Pulled quantities must be greater than 0");
+      err.status = 400;
+      throw err;
+    }
+    const results = await q.createPulls({ ...req.body, items });
+    res.status(201).json({ ids: results.map(result => result.lastInsertRowid) });
   } catch (err) { next(err); }
 });
 
 app.post("/api/receipts", async (req, res, next) => {
   try {
-    requireFields(req.body, ["itemId", "qty", "receivedDate"]);
-    const result = await q.createReceipt(req.body);
-    res.status(201).json({ id: result.lastInsertRowid });
+    requireFields(req.body, ["receivedDate"]);
+    const items = normalizeLineItems(req.body);
+    const invalid = items.find(item => item.qty < 0);
+    if (invalid) {
+      const err = new Error("Received quantities cannot be negative");
+      err.status = 400;
+      throw err;
+    }
+    const results = await q.createReceipts({ ...req.body, items });
+    res.status(201).json({ ids: results.map(result => result.lastInsertRowid) });
   } catch (err) { next(err); }
 });
 
@@ -52,7 +103,9 @@ app.post("/api/physical-counts", async (req, res, next) => {
 app.get("/api/inventory", async (req, res, next) => {
   try {
     const asOf = req.query.asOf || new Date().toISOString().slice(0, 10);
-    res.json(await q.getCurrentInventory(asOf));
+    const startDate = req.query.startDate || asOf;
+    const endDate = req.query.endDate || asOf;
+    res.json(await q.getCurrentInventory(asOf, startDate, endDate));
   } catch (err) { next(err); }
 });
 

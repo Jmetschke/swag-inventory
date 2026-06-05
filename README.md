@@ -43,6 +43,7 @@ http://localhost:3000
 ## Main API routes
 
 - `GET /api/items`
+- `POST /api/items`
 - `POST /api/pulls`
 - `POST /api/receipts`
 - `POST /api/physical-counts`

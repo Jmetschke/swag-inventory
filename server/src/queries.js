@@ -1,8 +1,19 @@
-const { all, run } = require("./db");
+const { all, run, runBatch } = require("./db");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 
 function listItems() {
   return all("SELECT * FROM items WHERE active = 1 ORDER BY name");
+}
+
+function createItem({ name, sku, reorderLevel, startingQuantity, startingDate }) {
+  return run(`INSERT INTO items (name, sku, reorder_level, starting_quantity, starting_date)
+    VALUES (?, ?, ?, ?, ?)`, [
+    name.trim(),
+    sku || null,
+    Number(reorderLevel || 0),
+    Number(startingQuantity || 0),
+    startingDate || "2026-03-09"
+  ]);
 }
 
 function createPull({ itemId, qty, pulledDate, pulledBy, purpose, notes }) {
@@ -10,9 +21,25 @@ function createPull({ itemId, qty, pulledDate, pulledBy, purpose, notes }) {
     VALUES (?, ?, ?, ?, ?, ?)`, [itemId, qty, pulledDate, pulledBy || null, purpose, notes || null]);
 }
 
+async function createPulls({ items, pulledDate, pulledBy, purpose, notes }) {
+  return runBatch(items.map(item => ({
+    sql: `INSERT INTO inventory_pulls (item_id, qty, pulled_date, pulled_by, purpose, notes)
+      VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [item.itemId, item.qty, pulledDate, pulledBy || null, purpose, notes || null]
+  })));
+}
+
 function createReceipt({ itemId, qty, receivedDate, receivedBy, notes }) {
   return run(`INSERT INTO inventory_receipts (item_id, qty, received_date, received_by, notes)
     VALUES (?, ?, ?, ?, ?)`, [itemId, qty, receivedDate, receivedBy || null, notes || null]);
+}
+
+async function createReceipts({ items, receivedDate, receivedBy, notes }) {
+  return runBatch(items.map(item => ({
+    sql: `INSERT INTO inventory_receipts (item_id, qty, received_date, received_by, notes)
+      VALUES (?, ?, ?, ?, ?)`,
+    args: [item.itemId, item.qty, receivedDate, receivedBy || null, notes || null]
+  })));
 }
 
 function createPhysicalCount({ itemId, countedQty, countedDate, countedBy, notes }) {
@@ -20,7 +47,7 @@ function createPhysicalCount({ itemId, countedQty, countedDate, countedBy, notes
     VALUES (?, ?, ?, ?, ?)`, [itemId, countedQty, countedDate, countedBy || null, notes || null]);
 }
 
-function getCurrentInventory(asOfDate) {
+function getCurrentInventory(asOfDate, startDate, endDate) {
   // Spreadsheet equivalent of: calculated count = prior count + items received - end-of-week use totals.
   return all(`
     SELECT
@@ -29,13 +56,14 @@ function getCurrentInventory(asOfDate) {
       i.starting_quantity AS startingQuantity,
       COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id AND r.received_date <= ?), 0) AS totalReceived,
       COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date <= ?), 0) AS totalPulled,
+      COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date BETWEEN ? AND ?), 0) AS pulledInRange,
       i.starting_quantity
         + COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id AND r.received_date <= ?), 0)
         - COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date <= ?), 0) AS calculatedOnHand
     FROM items i
     WHERE i.active = 1
     ORDER BY i.name
-  `, [asOfDate, asOfDate, asOfDate, asOfDate]);
+  `, [asOfDate, asOfDate, startDate, endDate, asOfDate, asOfDate]);
 }
 
 function getWeeklyUsage({ startDate, endDate }) {
@@ -84,4 +112,4 @@ function getPullLog(limit = 500) {
   `, [limit]);
 }
 
-module.exports = { listItems, createPull, createReceipt, createPhysicalCount, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };
+module.exports = { listItems, createItem, createPull, createPulls, createReceipt, createReceipts, createPhysicalCount, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };

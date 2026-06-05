@@ -13,8 +13,13 @@
       <h2>Pull Items</h2>
       <form id="pullForm">
         <label>Date <input type="date" name="pulledDate" required /></label>
-        <label>Item <select name="itemId" required></select></label>
-        <label>QTY <input type="number" name="qty" min="1" required /></label>
+        <div>
+          <div class="line-items-header">
+            <span>Items</span>
+            <button type="button" id="addPullItem" class="secondary">Add Item</button>
+          </div>
+          <div id="pullItems" class="line-items"></div>
+        </div>
         <label>Pulled By <input name="pulledBy" /></label>
         <label>Purpose
           <select name="purpose">
@@ -27,11 +32,28 @@
     </section>
 
     <section class="card">
+      <h2>Add Inventory Item</h2>
+      <form id="itemForm">
+        <label>Item Name <input name="name" required /></label>
+        <label>SKU <input name="sku" /></label>
+        <label>Starting QTY <input type="number" name="startingQuantity" min="0" value="0" required /></label>
+        <label>Reorder Level <input type="number" name="reorderLevel" min="0" value="0" /></label>
+        <label>Starting Date <input type="date" name="startingDate" /></label>
+        <button>Add Item</button>
+      </form>
+    </section>
+
+    <section class="card">
       <h2>Receive Items</h2>
       <form id="receiptForm">
         <label>Date <input type="date" name="receivedDate" required /></label>
-        <label>Item <select name="itemId" required></select></label>
-        <label>QTY <input type="number" name="qty" min="0" required /></label>
+        <div>
+          <div class="line-items-header">
+            <span>Items</span>
+            <button type="button" id="addReceiptItem" class="secondary">Add Item</button>
+          </div>
+          <div id="receiptItems" class="line-items"></div>
+        </div>
         <label>Received By <input name="receivedBy" /></label>
         <label>Notes <input name="notes" /></label>
         <button>Save Receipt</button>
@@ -40,8 +62,12 @@
 
     <section class="card wide">
       <h2>Calculated Inventory</h2>
-      <label>As of <input id="asOf" type="date" /></label>
-      <button id="refresh">Refresh</button>
+      <div class="inline-fields">
+        <label>As of <input id="asOf" type="date" /></label>
+        <label>Usage Start <input id="inventoryStart" type="date" /></label>
+        <label>Usage End <input id="inventoryEnd" type="date" /></label>
+        <button id="refresh">Refresh</button>
+      </div>
       <table id="inventoryTable"></table>
     </section>
 
