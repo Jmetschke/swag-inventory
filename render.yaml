@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: swag-inventory
+    runtime: node
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_DATABASE_TOKEN
+        sync: false
