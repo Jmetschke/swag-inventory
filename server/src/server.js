@@ -100,6 +100,41 @@ app.post("/api/physical-counts", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+app.get("/api/audits", async (req, res, next) => {
+  try {
+    res.json(await q.listAudits());
+  } catch (err) { next(err); }
+});
+
+app.get("/api/audits/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      const err = new Error("Invalid audit id");
+      err.status = 400;
+      throw err;
+    }
+    const rows = await q.getAuditDetails(id);
+    if (!rows.length) {
+      const err = new Error("Audit not found");
+      err.status = 404;
+      throw err;
+    }
+    const first = rows[0];
+    res.json({
+      id: first.id,
+      countedDate: first.countedDate,
+      countedBy: first.countedBy,
+      notes: first.notes,
+      createdAt: first.createdAt,
+      rows: rows.filter(row => row.item).map(row => ({
+        item: row.item,
+        countedQty: row.countedQty
+      }))
+    });
+  } catch (err) { next(err); }
+});
+
 app.post("/api/audits", async (req, res, next) => {
   try {
     requireFields(req.body, ["countedDate"]);
@@ -111,20 +146,18 @@ app.post("/api/audits", async (req, res, next) => {
     const invalid = normalized.find(count =>
       !Number.isInteger(count.itemId) ||
       count.itemId <= 0 ||
-      !Number.isFinite(count.countedQty) ||
-      count.countedQty < 0
+      !Number.isInteger(count.countedQty)
     );
     if (invalid) {
-      const err = new Error("Audit counts must include a valid itemId and non-negative countedQty");
+      const err = new Error("Audit counts must include a valid itemId and countedQty");
       err.status = 400;
       throw err;
     }
-    if (!normalized.length) {
-      res.status(201).json({ ids: [] });
-      return;
-    }
-    const results = await q.createPhysicalCounts({ ...req.body, counts: normalized });
-    res.status(201).json({ ids: results.map(result => result.lastInsertRowid) });
+    const result = await q.createAudit({ ...req.body, counts: normalized });
+    res.status(201).json({
+      id: result.auditId,
+      ids: result.countResults.map(count => count.lastInsertRowid)
+    });
   } catch (err) { next(err); }
 });
 

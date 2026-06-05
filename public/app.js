@@ -9,6 +9,7 @@ loadItems().then(() => {
   refreshInventory();
   runWeeklyReport();
   refreshAudit();
+  refreshAuditHistory();
 });
 
 async function action(url, options) {
@@ -90,7 +91,10 @@ document.querySelectorAll('.tab-button').forEach(button => {
   button.addEventListener('click', async () => {
     document.querySelectorAll('.tab-button').forEach(tab => tab.classList.toggle('active', tab === button));
     document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === button.dataset.tab));
-    if (button.dataset.tab === 'auditTab') await refreshAudit();
+    if (button.dataset.tab === 'auditTab') {
+      await refreshAudit();
+      await refreshAuditHistory();
+    }
   });
 });
 
@@ -128,17 +132,37 @@ document.getElementById('receiptForm').addEventListener('submit', async (e) => {
 
 document.getElementById('refresh').addEventListener('click', refreshInventory);
 document.getElementById('runWeekly').addEventListener('click', runWeeklyReport);
+document.getElementById('printInventory').addEventListener('click', () => {
+  const asOf = document.getElementById('asOf').value || today;
+  const startDate = document.getElementById('inventoryStart').value || asOf;
+  const endDate = document.getElementById('inventoryEnd').value || asOf;
+  printReport('Calculated Inventory', `As of ${asOf} | Usage ${startDate} to ${endDate}`, 'inventoryTable');
+});
+document.getElementById('printWeekly').addEventListener('click', () => {
+  const startDate = document.getElementById('weekStart').value || today;
+  const endDate = document.getElementById('weekEnd').value || today;
+  printReport('Weekly Usage Report', `${startDate} to ${endDate}`, 'weeklyTable');
+});
 document.getElementById('auditDate').addEventListener('change', refreshAudit);
+document.getElementById('closeAuditDialog').addEventListener('click', () => document.getElementById('auditDialog').close());
+document.getElementById('auditHistoryTable').addEventListener('click', async (e) => {
+  const button = e.target.closest('button[data-audit-id]');
+  if (button) await openAuditDetails(button.dataset.auditId);
+});
 document.getElementById('auditForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = formData(e.target);
   body.counts = [...document.querySelectorAll('#auditTable input[name="countedQty"]')]
-    .filter(input => input.value !== '')
-    .map(input => ({ itemId: Number(input.dataset.itemId), countedQty: Number(input.value) }));
+    .map(input => ({
+      itemId: Number(input.dataset.itemId),
+      countedQty: Number(input.value === '' ? input.dataset.knownCount : input.value)
+    }))
+    .filter(count => Number.isInteger(count.countedQty));
   await postJson('/api/audits', body);
   [...document.querySelectorAll('#auditTable input[name="countedQty"]')].forEach(input => input.value = '');
   await refreshInventory();
   await refreshAudit();
+  await refreshAuditHistory();
 });
 
 async function refreshInventory() {
@@ -162,10 +186,32 @@ async function refreshAudit() {
         <td>${escapeHtml(row.name)}</td>
         <td>${row.calculatedOnHand}</td>
         <td>${row.lastCountedDate || ''}</td>
-        <td><input type="number" name="countedQty" min="0" data-item-id="${row.id}" placeholder="${row.calculatedOnHand}" /></td>
+        <td><input type="number" name="countedQty" min="0" data-item-id="${row.id}" data-known-count="${row.calculatedOnHand}" placeholder="${row.calculatedOnHand}" /></td>
       </tr>
     `).join('')}</tbody>
   `;
+}
+
+async function refreshAuditHistory() {
+  const audits = await action('/api/audits');
+  renderTable('auditHistoryTable', ['Date','Counted By','Items','Notes','Details'], audits.map(audit => [
+    escapeHtml(audit.countedDate),
+    escapeHtml(audit.countedBy || ''),
+    audit.itemCount,
+    escapeHtml(audit.notes || ''),
+    `<button type="button" class="secondary" data-audit-id="${audit.id}">View</button>`
+  ]), { allowHtml: true });
+}
+
+async function openAuditDetails(id) {
+  const audit = await action(`/api/audits/${id}`);
+  document.getElementById('auditDialogTitle').textContent = `Audit ${audit.countedDate}`;
+  document.getElementById('auditDialogMeta').textContent = [
+    audit.countedBy ? `Counted by ${audit.countedBy}` : '',
+    audit.notes || ''
+  ].filter(Boolean).join(' | ');
+  renderTable('auditDetailTable', ['Item','Counted Number'], audit.rows.map(row => [row.item, row.countedQty]));
+  document.getElementById('auditDialog').showModal();
 }
 
 async function runWeeklyReport() {
@@ -175,8 +221,38 @@ async function runWeeklyReport() {
   renderTable('weeklyTable', ['Item','Used QTY'], report.rows.map(r => [r.name, r.usedQty]));
 }
 
-function renderTable(id, headers, rows) {
+function printReport(title, subtitle, tableId) {
+  const table = document.getElementById(tableId);
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) return;
+  printWindow.document.write(`
+    <!doctype html>
+    <html>
+      <head>
+        <title>${escapeHtml(title)}</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #222; margin: 24px; }
+          h1 { margin: 0 0 6px; font-size: 22px; }
+          p { margin: 0 0 18px; color: #555; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border-bottom: 1px solid #ccc; padding: 7px; text-align: left; }
+          th { background: #f0f2f5; }
+        </style>
+      </head>
+      <body>
+        <h1>${escapeHtml(title)}</h1>
+        <p>${escapeHtml(subtitle)}</p>
+        ${table.outerHTML}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
+function renderTable(id, headers, rows, options = {}) {
   const table = document.getElementById(id);
   table.innerHTML = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>` +
-    `<tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell ?? ''}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    `<tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${options.allowHtml ? (cell ?? '') : escapeHtml(cell ?? '')}</td>`).join('')}</tr>`).join('')}</tbody>`;
 }

@@ -47,12 +47,71 @@ function createPhysicalCount({ itemId, countedQty, countedDate, countedBy, notes
     VALUES (?, ?, ?, ?, ?)`, [itemId, countedQty, countedDate, countedBy || null, notes || null]);
 }
 
-async function createPhysicalCounts({ counts, countedDate, countedBy, notes }) {
+function createAuditSession({ countedDate, countedBy, notes }) {
+  return run(`INSERT INTO audit_sessions (counted_date, counted_by, notes)
+    VALUES (?, ?, ?)`, [countedDate, countedBy || null, notes || null]);
+}
+
+async function createPhysicalCounts({ auditId, counts, countedDate, countedBy, notes }) {
   return runBatch(counts.map(count => ({
-    sql: `INSERT INTO physical_counts (item_id, counted_qty, counted_date, counted_by, notes)
-      VALUES (?, ?, ?, ?, ?)`,
-    args: [count.itemId, count.countedQty, countedDate, countedBy || null, notes || null]
+    sql: `INSERT INTO physical_counts (audit_id, item_id, counted_qty, counted_date, counted_by, notes)
+      VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [auditId || null, count.itemId, count.countedQty, countedDate, countedBy || null, notes || null]
   })));
+}
+
+async function createAuditItems({ auditId, counts }) {
+  return runBatch(counts.map(count => ({
+    sql: "INSERT INTO audit_items (audit_id, item_id, counted_qty) VALUES (?, ?, ?)",
+    args: [auditId, count.itemId, count.countedQty]
+  })));
+}
+
+async function createAudit({ counts, countedDate, countedBy, notes }) {
+  const audit = await createAuditSession({ countedDate, countedBy, notes });
+  const auditId = audit.lastInsertRowid;
+  const auditItemResults = counts.length
+    ? await createAuditItems({ auditId, counts })
+    : [];
+  const physicalCounts = counts.filter(count => count.countedQty >= 0);
+  const countResults = physicalCounts.length
+    ? await createPhysicalCounts({ auditId, counts: physicalCounts, countedDate, countedBy, notes })
+    : [];
+  return { auditId, auditItemResults, countResults };
+}
+
+function listAudits() {
+  return all(`
+    SELECT
+      a.id,
+      a.counted_date AS countedDate,
+      a.counted_by AS countedBy,
+      a.notes,
+      a.created_at AS createdAt,
+      COUNT(ai.id) AS itemCount
+    FROM audit_sessions a
+    LEFT JOIN audit_items ai ON ai.audit_id = a.id
+    GROUP BY a.id, a.counted_date, a.counted_by, a.notes, a.created_at
+    ORDER BY a.counted_date DESC, a.id DESC
+  `);
+}
+
+function getAuditDetails(id) {
+  return all(`
+    SELECT
+      a.id,
+      a.counted_date AS countedDate,
+      a.counted_by AS countedBy,
+      a.notes,
+      a.created_at AS createdAt,
+      i.name AS item,
+      ai.counted_qty AS countedQty
+    FROM audit_sessions a
+    LEFT JOIN audit_items ai ON ai.audit_id = a.id
+    LEFT JOIN items i ON i.id = ai.item_id
+    WHERE a.id = ?
+    ORDER BY i.name
+  `, [id]);
 }
 
 function getCurrentInventory(asOfDate, startDate, endDate) {
@@ -133,4 +192,4 @@ function getPullLog(limit = 500) {
   `, [limit]);
 }
 
-module.exports = { listItems, createItem, createPull, createPulls, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };
+module.exports = { listItems, createItem, createPull, createPulls, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };

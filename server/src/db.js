@@ -75,8 +75,24 @@ async function initDb() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS audit_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      counted_date TEXT NOT NULL,
+      counted_by TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      audit_id INTEGER NOT NULL REFERENCES audit_sessions(id),
+      item_id INTEGER NOT NULL REFERENCES items(id),
+      counted_qty INTEGER NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS physical_counts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      audit_id INTEGER REFERENCES audit_sessions(id),
       item_id INTEGER NOT NULL REFERENCES items(id),
       counted_qty INTEGER NOT NULL CHECK(counted_qty >= 0),
       counted_date TEXT NOT NULL,
@@ -85,6 +101,11 @@ async function initDb() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  const physicalCountColumns = await all("PRAGMA table_info(physical_counts)");
+  if (!physicalCountColumns.some(column => column.name === "audit_id")) {
+    await run("ALTER TABLE physical_counts ADD COLUMN audit_id INTEGER REFERENCES audit_sessions(id)");
+  }
 
   const [{ count: existing }] = await all("SELECT COUNT(*) AS count FROM items");
   if (existing === 0) {

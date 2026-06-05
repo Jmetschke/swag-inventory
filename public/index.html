@@ -71,15 +71,19 @@
         <label>Usage Start <input id="inventoryStart" type="date" /></label>
         <label>Usage End <input id="inventoryEnd" type="date" /></label>
         <button id="refresh">Refresh</button>
+        <button id="printInventory" type="button" class="secondary">Print Report</button>
       </div>
       <table id="inventoryTable"></table>
     </section>
 
     <section class="card wide">
       <h2>Weekly Usage Report</h2>
-      <label>Start <input id="weekStart" type="date" /></label>
-      <label>End <input id="weekEnd" type="date" /></label>
-      <button id="runWeekly">Run Weekly Report</button>
+      <div class="inline-fields">
+        <label>Start <input id="weekStart" type="date" /></label>
+        <label>End <input id="weekEnd" type="date" /></label>
+        <button id="runWeekly">Run Weekly Report</button>
+        <button id="printWeekly" type="button" class="secondary">Print Report</button>
+      </div>
       <table id="weeklyTable"></table>
     </section>
   </main>
@@ -97,7 +101,20 @@
         <table id="auditTable"></table>
       </form>
     </section>
+
+    <section class="card wide">
+      <h2>Audit History</h2>
+      <table id="auditHistoryTable"></table>
+    </section>
   </main>
+  <dialog id="auditDialog">
+    <div class="dialog-header">
+      <h2 id="auditDialogTitle">Audit Details</h2>
+      <button id="closeAuditDialog" type="button" class="secondary">Close</button>
+    </div>
+    <div id="auditDialogMeta" class="dialog-meta"></div>
+    <table id="auditDetailTable"></table>
+  </dialog>
   <script src="/app.js"></script>
 </body>
 </html>
