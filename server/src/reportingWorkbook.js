@@ -104,6 +104,14 @@ function columnName(ref) {
 }
 
 function excelDate(serial) {
+  if (typeof serial === "string" && /^\d{4}-\d{2}-\d{2}/.test(serial.trim())) {
+    return serial.trim().slice(0, 10);
+  }
+  if (typeof serial === "string" && /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(serial.trim())) {
+    const [month, day, year] = serial.trim().split("/").map(Number);
+    const fullYear = year < 100 ? 2000 + year : year;
+    return new Date(Date.UTC(fullYear, month - 1, day)).toISOString().slice(0, 10);
+  }
   const date = new Date(Date.UTC(1899, 11, 30));
   date.setUTCDate(date.getUTCDate() + Number(serial));
   return date.toISOString().slice(0, 10);

@@ -149,7 +149,7 @@ document.getElementById('printInventory').addEventListener('click', () => {
   const asOf = document.getElementById('asOf').value || today;
   const startDate = document.getElementById('inventoryStart').value || asOf;
   const endDate = document.getElementById('inventoryEnd').value || asOf;
-  printReport('Calculated Inventory', `As of ${asOf} | Usage ${startDate} to ${endDate}`, 'inventoryTable');
+  printReport('Calculated Inventory', `As of ${asOf} | Usage ${startDate} to ${endDate}`, 'inventoryList');
 });
 document.getElementById('printWeekly').addEventListener('click', () => {
   const startDate = document.getElementById('weekStart').value || today;
@@ -184,7 +184,7 @@ async function refreshInventory() {
   const endDate = document.getElementById('inventoryEnd').value || asOf;
   const params = new URLSearchParams({ asOf, startDate, endDate });
   const rows = await action(`/api/inventory?${params}`);
-  renderTable('inventoryTable', ['Item','Starting','Received','Pulled','Used In Range','Calculated On Hand'], rows.map(r => [r.name, r.startingQuantity, r.totalReceived, r.totalPulled, r.pulledInRange, r.calculatedOnHand]));
+  renderInventoryList(rows);
 }
 
 async function refreshEntries() {
@@ -204,10 +204,10 @@ async function uploadEntriesFile() {
   const status = document.getElementById('entriesUploadStatus');
   const file = input.files[0];
   if (!file) {
-    status.textContent = 'Choose an .xlsx file first.';
+    status.textContent = 'Choose a report .xlsx file first.';
     return;
   }
-  status.textContent = 'Reading entries...';
+  status.textContent = 'Reading report...';
   try {
     const result = await action('/api/entries/upload', {
       method: 'POST',
@@ -217,7 +217,10 @@ async function uploadEntriesFile() {
       },
       body: await file.arrayBuffer()
     });
-    status.textContent = `Inserted ${result.inserted} new entries. Skipped ${result.skipped} duplicates.`;
+    const dateRange = result.startDate && result.endDate
+      ? ` Date range: ${result.startDate} to ${result.endDate}.`
+      : '';
+    status.textContent = `Inserted ${result.inserted} new entries. Skipped ${result.skipped} duplicates.${dateRange}`;
     input.value = '';
     await refreshEntries();
     await refreshInventory();
@@ -292,6 +295,13 @@ function printReport(title, subtitle, tableId) {
           table { width: 100%; border-collapse: collapse; }
           th, td { border-bottom: 1px solid #ccc; padding: 7px; text-align: left; }
           th { background: #f0f2f5; }
+          .inventory-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+          .inventory-item { border: 1px solid #ccc; padding: 10px; break-inside: avoid; }
+          .inventory-item h3 { margin: 0 0 8px; font-size: 14px; }
+          .inventory-item dl { display: grid; gap: 5px; margin: 0; }
+          .inventory-item dl div { display: flex; justify-content: space-between; gap: 8px; }
+          .inventory-item dt { color: #555; }
+          .inventory-item dd { margin: 0; font-weight: 700; }
         </style>
       </head>
       <body>
@@ -311,4 +321,20 @@ function renderTable(id, headers, rows, options = {}) {
   const table = document.getElementById(id);
   table.innerHTML = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>` +
     `<tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${options.allowHtml ? (cell ?? '') : escapeHtml(cell ?? '')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+
+function renderInventoryList(rows) {
+  const list = document.getElementById('inventoryList');
+  list.innerHTML = rows.map(row => `
+    <article class="inventory-item">
+      <h3>${escapeHtml(row.name)}</h3>
+      <dl>
+        <div><dt>Starting</dt><dd>${row.startingQuantity}</dd></div>
+        <div><dt>Received</dt><dd>${row.totalReceived}</dd></div>
+        <div><dt>Pulled</dt><dd>${row.totalPulled}</dd></div>
+        <div><dt>Used In Range</dt><dd>${row.pulledInRange}</dd></div>
+        <div><dt>On Hand</dt><dd>${row.calculatedOnHand}</dd></div>
+      </dl>
+    </article>
+  `).join('');
 }

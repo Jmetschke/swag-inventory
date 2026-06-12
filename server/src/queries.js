@@ -120,10 +120,13 @@ async function importPullEntries(entries) {
     })));
   }
 
+  const dates = normalized.map(entry => entry.pulledDate).sort();
   return {
     inserted: newEntries.length,
     skipped: skipped.length,
     total: entries.length,
+    startDate: dates[0] || null,
+    endDate: dates[dates.length - 1] || null,
     missingItems
   };
 }
@@ -250,9 +253,9 @@ function getWeeklyUsage({ startDate, endDate }) {
   const start = startDate || getWeekStart(new Date().toISOString().slice(0, 10));
   const end = endDate || getWeekEnd(start);
   return all(`
-    SELECT i.id, i.name, COALESCE(SUM(p.qty), 0) AS usedQty
+    SELECT i.id, i.name, SUM(p.qty) AS usedQty
     FROM items i
-    LEFT JOIN inventory_pulls p ON p.item_id = i.id AND p.pulled_date BETWEEN ? AND ?
+    JOIN inventory_pulls p ON p.item_id = i.id AND p.pulled_date BETWEEN ? AND ?
     WHERE i.active = 1
     GROUP BY i.id, i.name
     ORDER BY i.name
