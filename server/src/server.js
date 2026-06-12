@@ -7,9 +7,18 @@ const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 const { parseReportingWorkbook } = require("./reportingWorkbook");
 
 const app = express();
+let dbReady = false;
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+
+app.use("/api", (req, res, next) => {
+  if (!dbReady) {
+    res.status(503).json({ error: "Database is still initializing. Try again shortly." });
+    return;
+  }
+  next();
+});
 
 function requireFields(body, fields) {
   const missing = fields.filter(f => body[f] === undefined || body[f] === null || body[f] === "");
@@ -238,11 +247,15 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.PORT || 3000;
-initDb()
-  .then(() => {
-    app.listen(port, () => console.log(`Swag inventory app running on http://localhost:${port}`));
-  })
-  .catch(err => {
-    console.error("Failed to initialize database:", err);
-    process.exit(1);
-  });
+app.listen(port, () => {
+  console.log(`Swag inventory app running on port ${port}`);
+  initDb()
+    .then(() => {
+      dbReady = true;
+      console.log("Database initialized");
+    })
+    .catch(err => {
+      console.error("Failed to initialize database:", err);
+      process.exit(1);
+    });
+});
