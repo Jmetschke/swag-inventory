@@ -156,6 +156,7 @@ document.getElementById('printWeekly').addEventListener('click', () => {
   const endDate = document.getElementById('weekEnd').value || today;
   printReport('Weekly Usage Report', `${startDate} to ${endDate}`, 'weeklyTable');
 });
+document.getElementById('printAudit').addEventListener('click', printAuditSheet);
 document.getElementById('auditDate').addEventListener('change', refreshAudit);
 document.getElementById('closeAuditDialog').addEventListener('click', () => document.getElementById('auditDialog').close());
 document.getElementById('auditHistoryTable').addEventListener('click', async (e) => {
@@ -309,6 +310,67 @@ function printReport(title, subtitle, tableId) {
         <h1>${escapeHtml(title)}</h1>
         <p>${escapeHtml(subtitle)}</p>
         ${table.outerHTML}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
+function printAuditSheet() {
+  const countedDate = document.getElementById('auditDate').value || today;
+  const countedBy = document.querySelector('#auditForm input[name="countedBy"]').value.trim();
+  const notes = document.querySelector('#auditForm input[name="notes"]').value.trim();
+  const rows = [...document.querySelectorAll('#auditTable tbody tr')].map(row => {
+    const cells = row.querySelectorAll('td');
+    return {
+      item: cells[0]?.textContent.trim() || '',
+      knownCount: cells[1]?.textContent.trim() || '',
+      lastAudit: cells[2]?.textContent.trim() || ''
+    };
+  });
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) return;
+  printWindow.document.write(`
+    <!doctype html>
+    <html>
+      <head>
+        <title>Inventory Audit Count Sheet</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #222; margin: 24px; }
+          a { display: inline-block; margin-bottom: 10px; color: #1d4ed8; font-weight: 700; text-decoration: none; }
+          h1 { margin: 0 0 6px; font-size: 22px; }
+          p { margin: 0 0 18px; color: #555; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #bbb; padding: 8px; text-align: left; vertical-align: middle; }
+          th { background: #f0f2f5; }
+          tr { break-inside: avoid; }
+          .count-space { height: 28px; border-bottom: 2px solid #222; min-width: 120px; }
+          .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; margin: 0 0 18px; }
+          .meta div { border-bottom: 1px solid #999; padding-bottom: 6px; min-height: 20px; }
+          .meta span { color: #555; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        </style>
+      </head>
+      <body>
+        <a href="https://manufacturing-tracker.onrender.com" target="_blank" rel="noopener">Manufacturing Tracker</a>
+        <h1>Inventory Audit Count Sheet</h1>
+        <p>Audit date: ${escapeHtml(countedDate)}</p>
+        <div class="meta">
+          <div><span>Counted By</span><br>${escapeHtml(countedBy)}</div>
+          <div><span>Notes</span><br>${escapeHtml(notes)}</div>
+        </div>
+        <table>
+          <thead><tr><th>Item</th><th>Known Count</th><th>Last Audit</th><th>Physical Count</th></tr></thead>
+          <tbody>${rows.map(row => `
+            <tr>
+              <td>${escapeHtml(row.item)}</td>
+              <td>${escapeHtml(row.knownCount)}</td>
+              <td>${escapeHtml(row.lastAudit)}</td>
+              <td><div class="count-space"></div></td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
       </body>
     </html>
   `);
