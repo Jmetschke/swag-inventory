@@ -4,7 +4,7 @@ const cors = require("cors");
 const { initDb } = require("./db");
 const q = require("./queries");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
-const { parseReportingWorkbook } = require("./reportingWorkbook");
+const { parseReportingWorkbook, createEntryTemplate } = require("./reportingWorkbook");
 
 const app = express();
 let dbReady = false;
@@ -115,6 +115,15 @@ app.get("/api/entries", async (req, res, next) => {
   try {
     res.json(await q.listEntries(Number(req.query.limit || 1000)));
   } catch (err) { next(err); }
+});
+
+app.get("/api/entries/template", (req, res) => {
+  res.set({
+    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "Content-Disposition": 'attachment; filename="entry-upload-template.xlsx"',
+    "Cache-Control": "no-store"
+  });
+  res.send(createEntryTemplate());
 });
 
 app.post("/api/entries/upload", express.raw({
