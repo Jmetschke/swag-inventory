@@ -39,15 +39,19 @@ async function loadItems() {
   refreshItemSelects();
 }
 
-function itemOptions() {
-  return items.map(i => `<option value="${i.id}">${escapeHtml(i.name)}</option>`).join('');
+function itemOptions(includeInactive = false) {
+  return items
+    .filter(item => includeInactive || item.active)
+    .map(i => `<option value="${i.id}">${escapeHtml(i.name)}</option>`)
+    .join('');
 }
 
 function refreshItemSelects() {
   for (const select of document.querySelectorAll('select[name="itemId"]')) {
     const selected = select.value;
-    select.innerHTML = itemOptions();
-    if (items.some(item => String(item.id) === selected)) {
+    const includeInactive = select.closest('#receiptItems') !== null;
+    select.innerHTML = itemOptions(includeInactive);
+    if ([...select.options].some(option => option.value === selected)) {
       select.value = selected;
     }
   }
@@ -60,7 +64,7 @@ function addLineItem(containerId, minQty) {
   const row = document.createElement('div');
   row.className = 'line-item';
   row.innerHTML = `
-    <label>${itemLabel} <select name="itemId" required>${itemOptions()}</select></label>
+    <label>${itemLabel} <select name="itemId" required>${itemOptions(containerId === 'receiptItems')}</select></label>
     <label>${qtyLabel} <input type="number" name="qty" min="${minQty}" required /></label>
     <button type="button" class="secondary remove-line">Remove</button>
   `;
@@ -93,6 +97,25 @@ document.getElementById('openItemDialog').addEventListener('click', () => docume
 document.getElementById('openReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').showModal());
 document.getElementById('closeItemDialog').addEventListener('click', () => document.getElementById('itemDialog').close());
 document.getElementById('closeReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').close());
+document.getElementById('inventoryTab').addEventListener('click', async (e) => {
+  const button = e.target.closest('button[data-item-id]');
+  if (!button) return;
+  button.disabled = true;
+  try {
+    await action(`/api/items/${button.dataset.itemId}/active`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: button.dataset.active !== 'true' })
+    });
+    await loadItems();
+    await refreshInventory();
+    await refreshAudit();
+    await runWeeklyReport();
+  } catch (err) {
+    button.disabled = false;
+    window.alert(err.message);
+  }
+});
 
 document.querySelectorAll('.tab-button').forEach(button => {
   button.addEventListener('click', async () => {
@@ -183,7 +206,7 @@ async function refreshInventory() {
   const asOf = document.getElementById('asOf').value || today;
   const startDate = document.getElementById('inventoryStart').value || asOf;
   const endDate = document.getElementById('inventoryEnd').value || asOf;
-  const params = new URLSearchParams({ asOf, startDate, endDate });
+  const params = new URLSearchParams({ asOf, startDate, endDate, includeInactive: 'true' });
   const rows = await action(`/api/inventory?${params}`);
   renderInventoryList(rows);
 }
@@ -303,6 +326,7 @@ function printReport(title, subtitle, tableId) {
           .inventory-item dl div { display: flex; justify-content: space-between; gap: 8px; }
           .inventory-item dt { color: #555; }
           .inventory-item dd { margin: 0; font-weight: 700; }
+          .item-status-button { display: none; }
         </style>
       </head>
       <body>
@@ -387,9 +411,16 @@ function renderTable(id, headers, rows, options = {}) {
 
 function renderInventoryList(rows) {
   const list = document.getElementById('inventoryList');
-  list.innerHTML = rows.map(row => `
-    <article class="inventory-item">
-      <h3>${escapeHtml(row.name)}</h3>
+  const inactiveList = document.getElementById('inactiveInventoryList');
+  const inactiveSection = document.getElementById('inactiveInventorySection');
+  const renderCards = inventoryRows => inventoryRows.map(row => `
+    <article class="inventory-item${row.active ? '' : ' inactive'}">
+      <div class="inventory-item-header">
+        <h3>${escapeHtml(row.name)}</h3>
+        <button type="button" class="secondary item-status-button" data-item-id="${row.id}" data-active="${Boolean(row.active)}">
+          ${row.active ? 'Deactivate' : 'Activate'}
+        </button>
+      </div>
       <dl>
         <div><dt>Starting</dt><dd>${row.startingQuantity}</dd></div>
         <div><dt>Received</dt><dd>${row.totalReceived}</dd></div>
@@ -399,4 +430,9 @@ function renderInventoryList(rows) {
       </dl>
     </article>
   `).join('');
+  const activeRows = rows.filter(row => row.active);
+  const inactiveRows = rows.filter(row => !row.active);
+  list.innerHTML = renderCards(activeRows);
+  inactiveList.innerHTML = renderCards(inactiveRows);
+  inactiveSection.hidden = inactiveRows.length === 0;
 }

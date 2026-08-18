@@ -14,32 +14,11 @@
   </header>
   <nav class="tabs" aria-label="Inventory sections">
     <button class="tab-button active" data-tab="inventoryTab" type="button">Inventory</button>
+    <button class="tab-button" data-tab="pullTab" type="button">Item Pull</button>
     <button class="tab-button" data-tab="entriesTab" type="button">Entries</button>
     <button class="tab-button" data-tab="auditTab" type="button">Audit</button>
   </nav>
   <main id="inventoryTab" class="tab-panel active">
-    <section class="card primary-entry">
-      <h2>Pull Items</h2>
-      <form id="pullForm">
-        <label>Date <input type="date" name="pulledDate" required /></label>
-        <div>
-          <div class="line-items-header">
-            <span>Item Pulled</span>
-            <button type="button" id="addPullItem" class="secondary">Add Item</button>
-          </div>
-          <div id="pullItems" class="line-items"></div>
-        </div>
-        <label>Pulled By <input name="pulledBy" /></label>
-        <label>Purpose
-          <select name="purpose">
-            <option>Delivery/Client</option><option>Event/Promo</option><option>Employee</option><option>Other</option>
-          </select>
-        </label>
-        <label>Notes <input name="notes" /></label>
-        <button>Save Pull</button>
-      </form>
-    </section>
-
     <section class="card action-card">
       <h2>Add Inventory Item</h2>
       <button id="openItemDialog" type="button">Add Item</button>
@@ -60,6 +39,11 @@
         <button id="printInventory" type="button" class="secondary">Print Report</button>
       </div>
       <div id="inventoryList" class="inventory-list"></div>
+      <section id="inactiveInventorySection" class="inactive-inventory-section" hidden>
+        <h3>Deactivated Items</h3>
+        <p>These items are hidden from the Item Pull form.</p>
+        <div id="inactiveInventoryList" class="inventory-list"></div>
+      </section>
     </section>
 
     <section class="card wide">
@@ -71,6 +55,30 @@
         <button id="printWeekly" type="button" class="secondary">Print Report</button>
       </div>
       <table id="weeklyTable"></table>
+    </section>
+  </main>
+
+  <main id="pullTab" class="tab-panel">
+    <section class="card primary-entry">
+      <h2>Pull Items</h2>
+      <form id="pullForm">
+        <label>Date <input type="date" name="pulledDate" required /></label>
+        <div>
+          <div class="line-items-header">
+            <span>Item Pulled</span>
+            <button type="button" id="addPullItem" class="secondary">Add Item</button>
+          </div>
+          <div id="pullItems" class="line-items"></div>
+        </div>
+        <label>Pulled By <input name="pulledBy" /></label>
+        <label>Purpose
+          <select name="purpose">
+            <option>Delivery/Client</option><option>Event/Promo</option><option>Employee</option><option>Other</option>
+          </select>
+        </label>
+        <label>Notes <input name="notes" /></label>
+        <button>Save Pull</button>
+      </form>
     </section>
   </main>
 

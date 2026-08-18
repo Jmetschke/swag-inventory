@@ -72,6 +72,24 @@ app.post("/api/items", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+app.patch("/api/items/:id/active", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0 || typeof req.body.active !== "boolean") {
+      const err = new Error("A valid item id and boolean active value are required");
+      err.status = 400;
+      throw err;
+    }
+    const result = await q.setItemActive(id, req.body.active);
+    if (!result.rowsAffected) {
+      const err = new Error("Item not found");
+      err.status = 404;
+      throw err;
+    }
+    res.json({ id, active: req.body.active });
+  } catch (err) { next(err); }
+});
+
 app.post("/api/pulls", async (req, res, next) => {
   try {
     requireFields(req.body, ["pulledDate", "purpose"]);
@@ -79,6 +97,12 @@ app.post("/api/pulls", async (req, res, next) => {
     const invalid = items.find(item => item.qty <= 0);
     if (invalid) {
       const err = new Error("Pulled quantities must be greater than 0");
+      err.status = 400;
+      throw err;
+    }
+    const inactiveIds = await q.findInactiveItemIds(items.map(item => item.itemId));
+    if (inactiveIds.length) {
+      const err = new Error("Deactivated items cannot be pulled");
       err.status = 400;
       throw err;
     }
@@ -208,7 +232,8 @@ app.get("/api/inventory", async (req, res, next) => {
     const asOf = req.query.asOf || new Date().toISOString().slice(0, 10);
     const startDate = req.query.startDate || asOf;
     const endDate = req.query.endDate || asOf;
-    res.json(await q.getCurrentInventory(asOf, startDate, endDate));
+    const includeInactive = req.query.includeInactive === "true";
+    res.json(await q.getCurrentInventory(asOf, startDate, endDate, includeInactive));
   } catch (err) { next(err); }
 });
 

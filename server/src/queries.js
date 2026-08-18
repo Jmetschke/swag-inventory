@@ -2,7 +2,18 @@ const { all, run, runBatch } = require("./db");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 
 function listItems() {
-  return all("SELECT * FROM items WHERE active = 1 ORDER BY name");
+  return all("SELECT * FROM items ORDER BY active DESC, name");
+}
+
+function setItemActive(id, active) {
+  return run("UPDATE items SET active = ? WHERE id = ?", [active ? 1 : 0, id]);
+}
+
+async function findInactiveItemIds(ids) {
+  if (!ids.length) return [];
+  const placeholders = ids.map(() => "?").join(", ");
+  const rows = await all(`SELECT id FROM items WHERE id IN (${placeholders}) AND active = 0`, ids);
+  return rows.map(row => row.id);
 }
 
 function createItem({ name, sku, reorderLevel, startingQuantity, startingDate }) {
@@ -216,11 +227,12 @@ function getAuditDetails(id) {
   `, [id]);
 }
 
-function getCurrentInventory(asOfDate, startDate, endDate) {
+function getCurrentInventory(asOfDate, startDate, endDate, includeInactive = false) {
   return all(`
     SELECT
       i.id,
       i.name,
+      i.active,
       i.starting_quantity AS startingQuantity,
       COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id AND r.received_date <= ?), 0) AS totalReceived,
       COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date <= ?), 0) AS totalPulled,
@@ -243,9 +255,9 @@ function getCurrentInventory(asOfDate, startDate, endDate) {
             AND p.pulled_date > COALESCE((SELECT pc.counted_date FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1), '0000-00-00')
         ), 0) AS calculatedOnHand
     FROM items i
-    WHERE i.active = 1
-    ORDER BY i.name
-  `, [asOfDate, asOfDate, startDate, endDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate]);
+    WHERE (? = 1 OR i.active = 1)
+    ORDER BY i.active DESC, i.name
+  `, [asOfDate, asOfDate, startDate, endDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, includeInactive ? 1 : 0]);
 }
 
 function getWeeklyUsage({ startDate, endDate }) {
@@ -294,4 +306,4 @@ function getPullLog(limit = 500) {
   `, [limit]);
 }
 
-module.exports = { listItems, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };
+module.exports = { listItems, setItemActive, findInactiveItemIds, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };
