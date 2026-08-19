@@ -117,13 +117,16 @@ app.get("/api/entries", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-app.get("/api/entries/template", (req, res) => {
-  res.set({
-    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "Content-Disposition": 'attachment; filename="entry-upload-template.xlsx"',
-    "Cache-Control": "no-store"
-  });
-  res.send(createEntryTemplate());
+app.get("/api/entries/template", async (req, res, next) => {
+  try {
+    const activeItems = (await q.listItems()).filter(item => item.active);
+    res.set({
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": 'attachment; filename="entry-upload-template.xlsx"',
+      "Cache-Control": "no-store"
+    });
+    res.send(createEntryTemplate(activeItems));
+  } catch (err) { next(err); }
 });
 
 app.post("/api/entries/upload", express.raw({
