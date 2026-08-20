@@ -16,6 +16,7 @@
     <button class="tab-button active" data-tab="inventoryTab" type="button">Inventory</button>
     <button class="tab-button" data-tab="pullTab" type="button">Item Pull</button>
     <button class="tab-button" data-tab="entriesTab" type="button">Entries</button>
+    <button class="tab-button" data-tab="analysisTab" type="button">Analysis</button>
     <button class="tab-button" data-tab="auditTab" type="button">Audit</button>
   </nav>
   <main id="inventoryTab" class="tab-panel active">
@@ -94,6 +95,45 @@
       </div>
       <p id="entriesUploadStatus" class="status-line"></p>
       <table id="entriesTable"></table>
+    </section>
+  </main>
+
+  <main id="analysisTab" class="tab-panel">
+    <section class="card wide">
+      <div class="analysis-heading">
+        <div>
+          <h2>Usage Analysis</h2>
+          <p>Compare product usage across all recorded entries.</p>
+        </div>
+        <button id="refreshAnalysis" type="button">Refresh Analysis</button>
+      </div>
+      <div class="analysis-controls">
+        <fieldset>
+          <legend>Products</legend>
+          <div class="product-actions">
+            <button id="selectAllAnalysis" type="button" class="secondary">Select all</button>
+            <button id="clearAnalysis" type="button" class="secondary">Clear</button>
+          </div>
+          <div id="analysisProducts" class="product-filter"></div>
+        </fieldset>
+        <label>Average usage by
+          <select id="analysisGranularity">
+            <option value="month">Month</option>
+            <option value="week">Week</option>
+            <option value="quarter">Quarter</option>
+          </select>
+        </label>
+      </div>
+      <p id="analysisStatus" class="status-line"></p>
+      <div class="analysis-stats">
+        <article><span>All-time usage</span><strong id="analysisTotal">0</strong></article>
+        <article><span id="analysisAverageLabel">Average per month</span><strong id="analysisAverage">0</strong></article>
+        <article><span>Recorded date range</span><strong id="analysisRange">No usage</strong></article>
+      </div>
+    </section>
+    <section class="card wide">
+      <h2>Month-to-Month Usage</h2>
+      <div class="table-scroll"><table id="analysisMonthlyTable"></table></div>
     </section>
   </main>
 

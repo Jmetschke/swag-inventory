@@ -1,9 +1,11 @@
 const today = new Date().toISOString().slice(0, 10);
 let items = [];
+let analysisRows = [];
 
 document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
 
 loadItems().then(() => {
+  renderAnalysisProducts();
   addLineItem('pullItems', 1);
   addLineItem('receiptItems', 0);
   refreshInventory();
@@ -126,6 +128,8 @@ document.querySelectorAll('.tab-button').forEach(button => {
       await refreshAuditHistory();
     } else if (button.dataset.tab === 'entriesTab') {
       await refreshEntries();
+    } else if (button.dataset.tab === 'analysisTab') {
+      await refreshAnalysis();
     }
   });
 });
@@ -168,6 +172,11 @@ document.getElementById('refresh').addEventListener('click', refreshInventory);
 document.getElementById('runWeekly').addEventListener('click', runWeeklyReport);
 document.getElementById('refreshEntries').addEventListener('click', refreshEntries);
 document.getElementById('uploadEntries').addEventListener('click', uploadEntriesFile);
+document.getElementById('refreshAnalysis').addEventListener('click', refreshAnalysis);
+document.getElementById('analysisGranularity').addEventListener('change', renderAnalysis);
+document.getElementById('analysisProducts').addEventListener('change', refreshAnalysis);
+document.getElementById('selectAllAnalysis').addEventListener('click', () => setAnalysisProducts(true));
+document.getElementById('clearAnalysis').addEventListener('click', () => setAnalysisProducts(false));
 document.getElementById('printInventory').addEventListener('click', () => {
   const asOf = document.getElementById('asOf').value || today;
   const startDate = document.getElementById('inventoryStart').value || asOf;
@@ -221,6 +230,130 @@ async function refreshEntries() {
     entry.purpose,
     entry.notes || ''
   ]));
+}
+
+function renderAnalysisProducts() {
+  const container = document.getElementById('analysisProducts');
+  container.innerHTML = items.map(item => `
+    <label><input type="checkbox" value="${item.id}" checked />
+      <span>${escapeHtml(item.name)}${item.active ? '' : ' (inactive)'}</span>
+    </label>
+  `).join('');
+}
+
+function setAnalysisProducts(checked) {
+  document.querySelectorAll('#analysisProducts input').forEach(input => { input.checked = checked; });
+  refreshAnalysis();
+}
+
+function selectedAnalysisItems() {
+  return [...document.querySelectorAll('#analysisProducts input:checked')].map(input => Number(input.value));
+}
+
+async function refreshAnalysis() {
+  const selectedIds = selectedAnalysisItems();
+  const status = document.getElementById('analysisStatus');
+  if (!selectedIds.length) {
+    analysisRows = [];
+    status.textContent = 'Select at least one product to view usage.';
+    renderAnalysis();
+    return;
+  }
+  status.textContent = 'Loading usage...';
+  try {
+    const params = new URLSearchParams({ itemIds: selectedIds.join(',') });
+    const result = await action(`/api/reports/usage-analysis?${params}`);
+    analysisRows = result.rows;
+    status.textContent = analysisRows.length ? '' : 'No usage has been recorded for the selected products.';
+    renderAnalysis();
+  } catch (err) {
+    status.textContent = err.message;
+  }
+}
+
+function parseUsageDate(value) {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function periodStart(date, granularity) {
+  const result = new Date(date);
+  if (granularity === 'week') {
+    const day = result.getUTCDay();
+    result.setUTCDate(result.getUTCDate() - (day === 0 ? 6 : day - 1));
+  } else if (granularity === 'month') {
+    result.setUTCDate(1);
+  } else {
+    result.setUTCMonth(Math.floor(result.getUTCMonth() / 3) * 3, 1);
+  }
+  return result;
+}
+
+function nextPeriod(date, granularity) {
+  const result = new Date(date);
+  if (granularity === 'week') result.setUTCDate(result.getUTCDate() + 7);
+  if (granularity === 'month') result.setUTCMonth(result.getUTCMonth() + 1);
+  if (granularity === 'quarter') result.setUTCMonth(result.getUTCMonth() + 3);
+  return result;
+}
+
+function periodCount(firstDate, lastDate, granularity) {
+  let cursor = periodStart(firstDate, granularity);
+  const end = periodStart(lastDate, granularity);
+  let count = 0;
+  while (cursor <= end) {
+    count += 1;
+    cursor = nextPeriod(cursor, granularity);
+  }
+  return count;
+}
+
+function monthKey(value) {
+  return value.slice(0, 7);
+}
+
+function monthLabel(key) {
+  const [year, month] = key.split('-').map(Number);
+  return new Intl.DateTimeFormat(undefined, { month: 'short', year: 'numeric', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(year, month - 1, 1)));
+}
+
+function renderAnalysis() {
+  const total = analysisRows.reduce((sum, row) => sum + Number(row.qty), 0);
+  const granularity = document.getElementById('analysisGranularity').value;
+  const dates = analysisRows.map(row => row.date).sort();
+  const periods = dates.length
+    ? periodCount(parseUsageDate(dates[0]), parseUsageDate(dates[dates.length - 1]), granularity)
+    : 0;
+  document.getElementById('analysisTotal').textContent = total.toLocaleString();
+  document.getElementById('analysisAverageLabel').textContent = `Average per ${granularity}`;
+  document.getElementById('analysisAverage').textContent = periods ? (total / periods).toLocaleString(undefined, { maximumFractionDigits: 1 }) : '0';
+  document.getElementById('analysisRange').textContent = dates.length ? `${dates[0]} – ${dates[dates.length - 1]}` : 'No usage';
+
+  const selectedIds = new Set(selectedAnalysisItems());
+  const selectedItems = items.filter(item => selectedIds.has(Number(item.id)));
+  if (!dates.length) {
+    renderTable('analysisMonthlyTable', ['Month', ...selectedItems.map(item => item.name), 'Total'], []);
+    return;
+  }
+
+  const firstMonth = periodStart(parseUsageDate(dates[0]), 'month');
+  const lastMonth = periodStart(parseUsageDate(dates[dates.length - 1]), 'month');
+  const monthly = new Map();
+  for (const row of analysisRows) {
+    const key = monthKey(row.date);
+    if (!monthly.has(key)) monthly.set(key, new Map());
+    const itemTotals = monthly.get(key);
+    itemTotals.set(Number(row.itemId), (itemTotals.get(Number(row.itemId)) || 0) + Number(row.qty));
+  }
+  const tableRows = [];
+  for (let cursor = firstMonth; cursor <= lastMonth; cursor = nextPeriod(cursor, 'month')) {
+    const key = cursor.toISOString().slice(0, 7);
+    const itemTotals = monthly.get(key) || new Map();
+    const quantities = selectedItems.map(item => itemTotals.get(Number(item.id)) || 0);
+    tableRows.push([monthLabel(key), ...quantities, quantities.reduce((sum, qty) => sum + qty, 0)]);
+  }
+  renderTable('analysisMonthlyTable', ['Month', ...selectedItems.map(item => item.name), 'Total'], tableRows);
 }
 
 async function uploadEntriesFile() {

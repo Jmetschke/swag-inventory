@@ -273,6 +273,19 @@ app.get("/api/reports/ytd", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+app.get("/api/reports/usage-analysis", async (req, res, next) => {
+  try {
+    const rawIds = req.query.itemIds ? String(req.query.itemIds).split(",") : [];
+    const itemIds = rawIds.map(Number);
+    if (itemIds.some(id => !Number.isInteger(id) || id <= 0)) {
+      const err = new Error("itemIds must be a comma-separated list of valid item ids");
+      err.status = 400;
+      throw err;
+    }
+    res.json({ rows: await q.getUsageAnalysis(itemIds) });
+  } catch (err) { next(err); }
+});
+
 app.get("/api/logs/pulls", async (req, res, next) => {
   try {
     res.json(await q.getPullLog(Number(req.query.limit || 500)));

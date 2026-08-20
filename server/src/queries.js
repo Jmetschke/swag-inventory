@@ -306,4 +306,21 @@ function getPullLog(limit = 500) {
   `, [limit]);
 }
 
-module.exports = { listItems, setItemActive, findInactiveItemIds, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog };
+function getUsageAnalysis(itemIds = []) {
+  const ids = itemIds.map(Number).filter(id => Number.isInteger(id) && id > 0);
+  const where = ids.length ? `WHERE p.item_id IN (${ids.map(() => "?").join(", ")})` : "";
+  return all(`
+    SELECT
+      p.item_id AS itemId,
+      i.name AS item,
+      p.pulled_date AS date,
+      SUM(p.qty) AS qty
+    FROM inventory_pulls p
+    JOIN items i ON i.id = p.item_id
+    ${where}
+    GROUP BY p.item_id, i.name, p.pulled_date
+    ORDER BY p.pulled_date, i.name
+  `, ids);
+}
+
+module.exports = { listItems, setItemActive, findInactiveItemIds, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };
