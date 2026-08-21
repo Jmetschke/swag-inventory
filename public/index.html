@@ -17,6 +17,7 @@
     <button class="tab-button" data-tab="pullTab" type="button">Item Pull</button>
     <button class="tab-button" data-tab="entriesTab" type="button">Entries</button>
     <button class="tab-button" data-tab="analysisTab" type="button">Analysis</button>
+    <button class="tab-button" data-tab="skuTab" type="button">SKU Management</button>
     <button class="tab-button" data-tab="auditTab" type="button">Audit</button>
   </nav>
   <main id="inventoryTab" class="tab-panel active">
@@ -84,6 +85,13 @@
   </main>
 
   <main id="entriesTab" class="tab-panel">
+    <section class="card action-card wide">
+      <div>
+        <h2>Receive Delivery</h2>
+        <p>Add every product from a delivery and save them together.</p>
+      </div>
+      <button id="openReceiptFromEntries" type="button">Receive Delivery</button>
+    </section>
     <section class="card wide">
       <h2>Entries</h2>
       <p>Download the Excel template, add one entry per row, then upload the completed file.</p>
@@ -137,6 +145,34 @@
     </section>
   </main>
 
+  <main id="skuTab" class="tab-panel">
+    <section class="card wide">
+      <div class="analysis-heading">
+        <div>
+          <h2>SKU Mapping</h2>
+          <p>Consolidate legacy SKUs under one canonical SKU without changing historical transactions.</p>
+        </div>
+        <button id="openCanonicalDialog" type="button">Create Canonical SKU</button>
+      </div>
+      <div class="sku-map-controls">
+        <fieldset>
+          <legend>1. Select SKUs to consolidate</legend>
+          <div id="skuMappingSources" class="sku-source-list"></div>
+        </fieldset>
+        <label>2. Canonical SKU
+          <select id="canonicalSkuSelect"></select>
+        </label>
+        <button id="mapSkus" type="button">Map Selected SKUs</button>
+      </div>
+      <p class="field-help">The selected SKUs will become inactive for new transactions. Existing entries, receipts, and audits will keep their original SKU.</p>
+      <p id="skuMappingStatus" class="status-line"></p>
+    </section>
+    <section class="card wide">
+      <h2>All SKUs</h2>
+      <div class="table-scroll"><table id="skuManagementTable"></table></div>
+    </section>
+  </main>
+
   <main id="auditTab" class="tab-panel">
     <section class="card wide">
       <h2>Inventory Audit</h2>
@@ -173,21 +209,22 @@
   </dialog>
   <dialog id="receiptDialog">
     <div class="dialog-header">
-      <h2>Receive Items</h2>
+      <h2>Receive Delivery</h2>
       <button id="closeReceiptDialog" type="button" class="secondary">Close</button>
     </div>
     <form id="receiptForm">
       <label>Date <input type="date" name="receivedDate" required /></label>
       <div>
         <div class="line-items-header">
-          <span>Items</span>
-          <button type="button" id="addReceiptItem" class="secondary">Add Item</button>
+          <span>Delivery Items</span>
+          <button type="button" id="addReceiptItem" class="secondary">Add Another Item</button>
         </div>
+        <p class="field-help">Use “Add Another Item” for each additional product in this delivery.</p>
         <div id="receiptItems" class="line-items"></div>
       </div>
       <label>Received By <input name="receivedBy" /></label>
       <label>Notes <input name="notes" /></label>
-      <button>Save Receipt</button>
+      <button>Save Delivery</button>
     </form>
   </dialog>
   <dialog id="auditDialog">

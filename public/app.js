@@ -6,6 +6,7 @@ document.querySelectorAll('input[type="date"]').forEach(input => input.value = t
 
 loadItems().then(() => {
   renderAnalysisProducts();
+  renderSkuManagement();
   addLineItem('pullItems', 1);
   addLineItem('receiptItems', 0);
   refreshInventory();
@@ -51,8 +52,7 @@ function itemOptions(includeInactive = false) {
 function refreshItemSelects() {
   for (const select of document.querySelectorAll('select[name="itemId"]')) {
     const selected = select.value;
-    const includeInactive = select.closest('#receiptItems') !== null;
-    select.innerHTML = itemOptions(includeInactive);
+    select.innerHTML = itemOptions(false);
     if ([...select.options].some(option => option.value === selected)) {
       select.value = selected;
     }
@@ -66,7 +66,7 @@ function addLineItem(containerId, minQty) {
   const row = document.createElement('div');
   row.className = 'line-item';
   row.innerHTML = `
-    <label>${itemLabel} <select name="itemId" required>${itemOptions(containerId === 'receiptItems')}</select></label>
+    <label>${itemLabel} <select name="itemId" required>${itemOptions(false)}</select></label>
     <label>${qtyLabel} <input type="number" name="qty" min="${minQty}" required /></label>
     <button type="button" class="secondary remove-line">Remove</button>
   `;
@@ -97,6 +97,8 @@ document.getElementById('addPullItem').addEventListener('click', () => addLineIt
 document.getElementById('addReceiptItem').addEventListener('click', () => addLineItem('receiptItems', 0));
 document.getElementById('openItemDialog').addEventListener('click', () => document.getElementById('itemDialog').showModal());
 document.getElementById('openReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').showModal());
+document.getElementById('openReceiptFromEntries').addEventListener('click', () => document.getElementById('receiptDialog').showModal());
+document.getElementById('openCanonicalDialog').addEventListener('click', () => document.getElementById('itemDialog').showModal());
 document.getElementById('closeItemDialog').addEventListener('click', () => document.getElementById('itemDialog').close());
 document.getElementById('closeReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').close());
 document.getElementById('inventoryTab').addEventListener('click', async (e) => {
@@ -130,6 +132,9 @@ document.querySelectorAll('.tab-button').forEach(button => {
       await refreshEntries();
     } else if (button.dataset.tab === 'analysisTab') {
       await refreshAnalysis();
+    } else if (button.dataset.tab === 'skuTab') {
+      await loadItems();
+      renderSkuManagement();
     }
   });
 });
@@ -144,6 +149,8 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
   e.target.querySelector('input[name="startingDate"]').value = today;
   document.getElementById('itemDialog').close();
   await loadItems();
+  renderAnalysisProducts();
+  renderSkuManagement();
   await refreshInventory();
   await refreshAudit();
   await runWeeklyReport();
@@ -177,6 +184,21 @@ document.getElementById('analysisGranularity').addEventListener('change', render
 document.getElementById('analysisProducts').addEventListener('change', refreshAnalysis);
 document.getElementById('selectAllAnalysis').addEventListener('click', () => setAnalysisProducts(true));
 document.getElementById('clearAnalysis').addEventListener('click', () => setAnalysisProducts(false));
+document.getElementById('mapSkus').addEventListener('click', mapSelectedSkus);
+document.getElementById('skuManagementTable').addEventListener('click', async (e) => {
+  const button = e.target.closest('button[data-unmap-id]');
+  if (!button) return;
+  button.disabled = true;
+  try {
+    await action(`/api/items/${button.dataset.unmapId}/mapping`, { method: 'DELETE' });
+    await loadItems();
+    renderAnalysisProducts();
+    renderSkuManagement('Mapping removed. The SKU is active again.');
+    await refreshInventory();
+  } catch (err) {
+    renderSkuManagement(err.message);
+  }
+});
 document.getElementById('printInventory').addEventListener('click', () => {
   const asOf = document.getElementById('asOf').value || today;
   const startDate = document.getElementById('inventoryStart').value || asOf;
@@ -222,9 +244,10 @@ async function refreshInventory() {
 
 async function refreshEntries() {
   const entries = await action('/api/entries?limit=2000');
-  renderTable('entriesTable', ['Date','Item Pulled','QTY','Pulled By','Purpose','Notes'], entries.map(entry => [
+  renderTable('entriesTable', ['Date','Original SKU','Canonical SKU','QTY','Pulled By','Purpose','Notes'], entries.map(entry => [
     entry.date,
     entry.itemPulled,
+    entry.canonicalItem || entry.itemPulled,
     entry.qty,
     entry.pulledBy || '',
     entry.purpose,
@@ -232,9 +255,58 @@ async function refreshEntries() {
   ]));
 }
 
+function renderSkuManagement(message = '') {
+  const sourceContainer = document.getElementById('skuMappingSources');
+  const canonicalSelect = document.getElementById('canonicalSkuSelect');
+  const sourceItems = items.filter(item => !Number(item.mappedItemCount));
+  const canonicalItems = items.filter(item => !item.canonicalItemId);
+  sourceContainer.innerHTML = sourceItems.map(item => `
+    <label><input type="checkbox" value="${item.id}" /> <span>${escapeHtml(item.name)}${item.canonicalName ? ` → ${escapeHtml(item.canonicalName)}` : ''}</span></label>
+  `).join('');
+  canonicalSelect.innerHTML = `<option value="">Choose canonical SKU</option>` + canonicalItems
+    .map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
+  renderTable('skuManagementTable', ['SKU','Code','Status','Mapped To','Starting QTY','Historical Received','Historical Used','Action'], items.map(item => [
+    escapeHtml(item.name),
+    escapeHtml(item.sku || ''),
+    `<span class="status-badge${item.active ? ' active' : ''}">${item.canonicalItemId ? 'Legacy' : (item.active ? 'Active' : 'Inactive')}</span>`,
+    escapeHtml(item.canonicalName || ''),
+    Number(item.starting_quantity).toLocaleString(),
+    Number(item.historicalReceived).toLocaleString(),
+    Number(item.historicalUsed).toLocaleString(),
+    item.canonicalItemId ? `<button type="button" class="secondary" data-unmap-id="${item.id}">Remove Mapping</button>` : ''
+  ]), { allowHtml: true });
+  document.getElementById('skuMappingStatus').textContent = message;
+}
+
+async function mapSelectedSkus() {
+  const sourceIds = [...document.querySelectorAll('#skuMappingSources input:checked')].map(input => Number(input.value));
+  const canonicalId = Number(document.getElementById('canonicalSkuSelect').value);
+  const status = document.getElementById('skuMappingStatus');
+  if (!sourceIds.length || !canonicalId) {
+    status.textContent = 'Select at least one source SKU and a canonical SKU.';
+    return;
+  }
+  const canonical = items.find(item => Number(item.id) === canonicalId);
+  const sources = items.filter(item => sourceIds.includes(Number(item.id)));
+  const summary = sources.map(item => `${item.name} (starting ${item.starting_quantity}, received ${item.historicalReceived}, used ${item.historicalUsed})`).join('\n');
+  if (!window.confirm(`Map these SKUs to ${canonical.name}?\n\n${summary}\n\nHistorical transactions will keep their original SKU.`)) return;
+  status.textContent = 'Saving mapping...';
+  try {
+    await postJson('/api/items/map', { sourceIds, canonicalId });
+    await loadItems();
+    renderAnalysisProducts();
+    renderSkuManagement(`${sources.length} SKU${sources.length === 1 ? '' : 's'} mapped to ${canonical.name}.`);
+    await refreshInventory();
+    await refreshAudit();
+    await runWeeklyReport();
+  } catch (err) {
+    status.textContent = err.message;
+  }
+}
+
 function renderAnalysisProducts() {
   const container = document.getElementById('analysisProducts');
-  container.innerHTML = items.map(item => `
+  container.innerHTML = items.filter(item => !item.canonicalItemId).map(item => `
     <label><input type="checkbox" value="${item.id}" checked />
       <span>${escapeHtml(item.name)}${item.active ? '' : ' (inactive)'}</span>
     </label>
@@ -424,7 +496,11 @@ async function openAuditDetails(id) {
     audit.countedBy ? `Counted by ${audit.countedBy}` : '',
     audit.notes || ''
   ].filter(Boolean).join(' | ');
-  renderTable('auditDetailTable', ['Item','Counted Number'], audit.rows.map(row => [row.item, row.countedQty]));
+  renderTable('auditDetailTable', ['Original SKU','Canonical SKU','Counted Number'], audit.rows.map(row => [
+    row.item,
+    row.canonicalItem || row.item,
+    row.countedQty
+  ]));
   document.getElementById('auditDialog').showModal();
 }
 
@@ -549,7 +625,7 @@ function renderInventoryList(rows) {
   const renderCards = inventoryRows => inventoryRows.map(row => `
     <article class="inventory-item${row.active ? '' : ' inactive'}">
       <div class="inventory-item-header">
-        <h3>${escapeHtml(row.name)}</h3>
+        <h3>${escapeHtml(row.name)}${row.componentCount > 1 ? ` <span class="status-badge">${row.componentCount} SKUs</span>` : ''}</h3>
         <button type="button" class="secondary item-status-button" data-item-id="${row.id}" data-active="${Boolean(row.active)}">
           ${row.active ? 'Deactivate' : 'Activate'}
         </button>

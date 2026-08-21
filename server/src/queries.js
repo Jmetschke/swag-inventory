@@ -2,11 +2,77 @@ const { all, run, runBatch } = require("./db");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 
 function listItems() {
-  return all("SELECT * FROM items ORDER BY active DESC, name");
+  return all(`
+    SELECT
+      i.*,
+      i.canonical_item_id AS canonicalItemId,
+      i.canonical_mapped_at AS canonicalMappedAt,
+      c.name AS canonicalName,
+      (SELECT COUNT(*) FROM items child WHERE child.canonical_item_id = i.id) AS mappedItemCount,
+      COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id), 0) AS historicalUsed,
+      COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id), 0) AS historicalReceived
+    FROM items i
+    LEFT JOIN items c ON c.id = i.canonical_item_id
+    ORDER BY i.active DESC, i.name
+  `);
 }
 
 function setItemActive(id, active) {
   return run("UPDATE items SET active = ? WHERE id = ?", [active ? 1 : 0, id]);
+}
+
+async function mapItems(sourceIds, canonicalId) {
+  const uniqueIds = [...new Set(sourceIds.map(Number))];
+  const ids = [...uniqueIds, Number(canonicalId)];
+  const placeholders = ids.map(() => "?").join(", ");
+  const found = await all(`
+    SELECT id, name, canonical_item_id AS canonicalItemId, canonical_mapped_at AS canonicalMappedAt,
+      (SELECT COUNT(*) FROM items child WHERE child.canonical_item_id = items.id) AS mappedItemCount
+    FROM items WHERE id IN (${placeholders})
+  `, ids);
+  const byId = new Map(found.map(item => [Number(item.id), item]));
+  const canonical = byId.get(Number(canonicalId));
+  if (!canonical) throw Object.assign(new Error("Canonical SKU not found"), { status: 404 });
+  if (canonical.canonicalItemId) throw Object.assign(new Error("Choose a root SKU as the canonical SKU; mapped SKUs cannot be targets"), { status: 400 });
+  if (uniqueIds.some(id => id === Number(canonicalId))) throw Object.assign(new Error("A SKU cannot be mapped to itself"), { status: 400 });
+  if (uniqueIds.some(id => !byId.has(id))) throw Object.assign(new Error("One or more source SKUs were not found"), { status: 404 });
+  if (uniqueIds.some(id => Number(byId.get(id).mappedItemCount) > 0)) {
+    throw Object.assign(new Error("A SKU that already has mapped children cannot be mapped under another SKU"), { status: 400 });
+  }
+  const mappedSources = uniqueIds.map(id => byId.get(id)).filter(item => item.canonicalItemId);
+  for (const source of mappedSources) {
+    const priorReset = await all(`SELECT id FROM physical_counts
+      WHERE item_id = ? AND created_at >= ? LIMIT 1`, [source.canonicalItemId, source.canonicalMappedAt]);
+    if (priorReset.length) {
+      throw Object.assign(new Error(`${source.name} cannot be remapped because its current canonical group has already had a consolidated audit`), { status: 400 });
+    }
+  }
+  const existingChildren = found.filter(item => Number(item.id) === Number(canonicalId))[0].mappedItemCount;
+  if (Number(existingChildren) > 0) {
+    const [{ firstMappedAt }] = await all("SELECT MIN(canonical_mapped_at) AS firstMappedAt FROM items WHERE canonical_item_id = ?", [canonicalId]);
+    const resets = await all("SELECT id FROM physical_counts WHERE item_id = ? AND created_at >= ? LIMIT 1", [canonicalId, firstMappedAt]);
+    if (resets.length) {
+      throw Object.assign(new Error("New SKUs cannot be added to this canonical group after a consolidated audit"), { status: 400 });
+    }
+  }
+  await runBatch([
+    { sql: "UPDATE items SET active = 1, canonical_item_id = NULL, canonical_mapped_at = NULL WHERE id = ?", args: [canonicalId] },
+    ...uniqueIds.map(id => ({
+      sql: "UPDATE items SET active = 0, canonical_item_id = ?, canonical_mapped_at = CURRENT_TIMESTAMP WHERE id = ?",
+      args: [canonicalId, id]
+    }))
+  ]);
+  return { sourceIds: uniqueIds, canonicalId: Number(canonicalId) };
+}
+
+async function unmapItem(id) {
+  const [item] = await all("SELECT id, name, canonical_item_id AS canonicalItemId, canonical_mapped_at AS canonicalMappedAt FROM items WHERE id = ?", [id]);
+  if (!item || !item.canonicalItemId) return { rowsAffected: 0 };
+  const reset = await all("SELECT id FROM physical_counts WHERE item_id = ? AND created_at >= ? LIMIT 1", [item.canonicalItemId, item.canonicalMappedAt]);
+  if (reset.length) {
+    throw Object.assign(new Error("This mapping cannot be removed after a consolidated audit because doing so could double-count inventory"), { status: 400 });
+  }
+  return run("UPDATE items SET canonical_item_id = NULL, canonical_mapped_at = NULL, active = 1 WHERE id = ?", [id]);
 }
 
 async function findInactiveItemIds(ids) {
@@ -57,6 +123,7 @@ function listEntries(limit = 1000) {
       p.id,
       p.pulled_date AS date,
       i.name AS itemPulled,
+      c.name AS canonicalItem,
       p.qty,
       p.pulled_by AS pulledBy,
       p.purpose,
@@ -64,6 +131,7 @@ function listEntries(limit = 1000) {
       p.source_ref AS sourceRef
     FROM inventory_pulls p
     JOIN items i ON i.id = p.item_id
+    LEFT JOIN items c ON c.id = i.canonical_item_id
     ORDER BY p.pulled_date DESC, p.id DESC
     LIMIT ?
   `, [limit]);
@@ -75,6 +143,12 @@ async function importPullEntries(entries) {
   const missingItems = [...new Set(entries.map(entry => entry.item).filter(item => !itemByName.has(item)))];
   if (missingItems.length) {
     const err = new Error(`Missing item(s): ${missingItems.join(", ")}`);
+    err.status = 400;
+    throw err;
+  }
+  const unavailableItems = [...new Set(entries.map(entry => itemByName.get(entry.item)).filter(item => item && !item.active).map(item => item.name))];
+  if (unavailableItems.length) {
+    const err = new Error(`Legacy or inactive item(s) cannot be used for new entries: ${unavailableItems.join(", ")}`);
     err.status = 400;
     throw err;
   }
@@ -218,46 +292,85 @@ function getAuditDetails(id) {
       a.notes,
       a.created_at AS createdAt,
       i.name AS item,
+      c.name AS canonicalItem,
       ai.counted_qty AS countedQty
     FROM audit_sessions a
     LEFT JOIN audit_items ai ON ai.audit_id = a.id
     LEFT JOIN items i ON i.id = ai.item_id
+    LEFT JOIN items c ON c.id = i.canonical_item_id
     WHERE a.id = ?
     ORDER BY i.name
   `, [id]);
 }
 
-function getCurrentInventory(asOfDate, startDate, endDate, includeInactive = false) {
-  return all(`
-    SELECT
-      i.id,
-      i.name,
-      i.active,
-      i.starting_quantity AS startingQuantity,
-      COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id AND r.received_date <= ?), 0) AS totalReceived,
-      COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date <= ?), 0) AS totalPulled,
-      COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id AND p.pulled_date BETWEEN ? AND ?), 0) AS pulledInRange,
-      (SELECT pc.counted_qty FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1) AS lastCountedQty,
-      (SELECT pc.counted_date FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1) AS lastCountedDate,
-      COALESCE((SELECT pc.counted_qty FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1), i.starting_quantity)
-        + COALESCE((
-          SELECT SUM(r.qty)
-          FROM inventory_receipts r
-          WHERE r.item_id = i.id
-            AND r.received_date <= ?
-            AND r.received_date > COALESCE((SELECT pc.counted_date FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1), '0000-00-00')
-        ), 0)
-        - COALESCE((
-          SELECT SUM(p.qty)
-          FROM inventory_pulls p
-          WHERE p.item_id = i.id
-            AND p.pulled_date <= ?
-            AND p.pulled_date > COALESCE((SELECT pc.counted_date FROM physical_counts pc WHERE pc.item_id = i.id AND pc.counted_date <= ? ORDER BY pc.counted_date DESC, pc.id DESC LIMIT 1), '0000-00-00')
-        ), 0) AS calculatedOnHand
-    FROM items i
-    WHERE (? = 1 OR i.active = 1)
-    ORDER BY i.active DESC, i.name
-  `, [asOfDate, asOfDate, startDate, endDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, asOfDate, includeInactive ? 1 : 0]);
+async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive = false) {
+  const pullThrough = endDate > asOfDate ? endDate : asOfDate;
+  const [itemRows, receipts, pulls, counts] = await Promise.all([
+    listItems(),
+    all("SELECT item_id AS itemId, qty, received_date AS date FROM inventory_receipts WHERE received_date <= ?", [asOfDate]),
+    all("SELECT item_id AS itemId, qty, pulled_date AS date FROM inventory_pulls WHERE pulled_date <= ?", [pullThrough]),
+    all(`SELECT id, item_id AS itemId, counted_qty AS qty, counted_date AS date, created_at AS createdAt
+      FROM physical_counts WHERE counted_date <= ? ORDER BY counted_date DESC, id DESC`, [asOfDate])
+  ]);
+  const roots = itemRows.filter(item => !item.canonicalItemId && (includeInactive || item.active));
+  const membersByRoot = new Map(roots.map(root => [Number(root.id), []]));
+  for (const item of itemRows) {
+    const rootId = Number(item.canonicalItemId || item.id);
+    if (membersByRoot.has(rootId)) membersByRoot.get(rootId).push(item);
+  }
+  const sum = rows => rows.reduce((total, row) => total + Number(row.qty), 0);
+  const rowsFor = (rows, memberIds, predicate = () => true) => rows.filter(row => memberIds.has(Number(row.itemId)) && predicate(row));
+  const latestCountFor = itemId => counts.find(count => Number(count.itemId) === Number(itemId));
+
+  return roots.map(root => {
+    const members = membersByRoot.get(Number(root.id));
+    const memberIds = new Set(members.map(item => Number(item.id)));
+    const groupReceipts = rowsFor(receipts, memberIds);
+    const groupPulls = rowsFor(pulls, memberIds);
+    const mappedChildren = members.filter(item => Number(item.id) !== Number(root.id));
+    const latestMappedAt = mappedChildren.map(item => item.canonicalMappedAt).filter(Boolean).sort().at(-1);
+    const groupReset = latestMappedAt
+      ? counts.find(count => Number(count.itemId) === Number(root.id) && count.createdAt >= latestMappedAt)
+      : null;
+
+    let calculatedOnHand;
+    let lastCountedQty;
+    let lastCountedDate;
+    if (groupReset) {
+      calculatedOnHand = Number(groupReset.qty)
+        + sum(groupReceipts.filter(row => row.date > groupReset.date))
+        - sum(groupPulls.filter(row => row.date <= asOfDate && row.date > groupReset.date));
+      lastCountedQty = Number(groupReset.qty);
+      lastCountedDate = groupReset.date;
+    } else {
+      calculatedOnHand = members.reduce((groupTotal, member) => {
+        const lastCount = latestCountFor(member.id);
+        const baseline = lastCount ? Number(lastCount.qty) : Number(member.starting_quantity);
+        const after = lastCount ? lastCount.date : "0000-00-00";
+        return groupTotal + baseline
+          + sum(groupReceipts.filter(row => Number(row.itemId) === Number(member.id) && row.date > after))
+          - sum(groupPulls.filter(row => Number(row.itemId) === Number(member.id) && row.date <= asOfDate && row.date > after));
+      }, 0);
+      const latestMemberCount = counts.find(count => memberIds.has(Number(count.itemId)));
+      lastCountedQty = latestMemberCount ? Number(latestMemberCount.qty) : null;
+      lastCountedDate = latestMemberCount ? latestMemberCount.date : null;
+    }
+
+    return {
+      id: Number(root.id),
+      name: root.name,
+      active: Number(root.active),
+      startingQuantity: members.reduce((total, item) => total + Number(item.starting_quantity), 0),
+      totalReceived: sum(groupReceipts),
+      totalPulled: sum(groupPulls.filter(row => row.date <= asOfDate)),
+      pulledInRange: sum(groupPulls.filter(row => row.date >= startDate && row.date <= endDate)),
+      lastCountedQty,
+      lastCountedDate,
+      calculatedOnHand,
+      componentCount: members.length,
+      components: members.map(item => ({ id: Number(item.id), name: item.name }))
+    };
+  }).sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name));
 }
 
 function getWeeklyUsage({ startDate, endDate }) {
@@ -265,42 +378,48 @@ function getWeeklyUsage({ startDate, endDate }) {
   const start = startDate || getWeekStart(new Date().toISOString().slice(0, 10));
   const end = endDate || getWeekEnd(start);
   return all(`
-    SELECT i.id, i.name, SUM(p.qty) AS usedQty
-    FROM items i
-    JOIN inventory_pulls p ON p.item_id = i.id AND p.pulled_date BETWEEN ? AND ?
-    WHERE i.active = 1
-    GROUP BY i.id, i.name
-    ORDER BY i.name
+    SELECT root.id, root.name, SUM(p.qty) AS usedQty
+    FROM inventory_pulls p
+    JOIN items source ON source.id = p.item_id
+    JOIN items root ON root.id = COALESCE(source.canonical_item_id, source.id)
+    WHERE p.pulled_date BETWEEN ? AND ?
+    GROUP BY root.id, root.name
+    ORDER BY root.name
   `, [start, end]);
 }
 
 function getPurposeSummary({ startDate, endDate }) {
   // Spreadsheet equivalent of reporting sheet SUMIFS by item + purpose + selected date range.
   return all(`
-    SELECT i.name AS item, p.purpose, SUM(p.qty) AS totalQty
+    SELECT root.name AS item, p.purpose, SUM(p.qty) AS totalQty
     FROM inventory_pulls p
-    JOIN items i ON i.id = p.item_id
+    JOIN items source ON source.id = p.item_id
+    JOIN items root ON root.id = COALESCE(source.canonical_item_id, source.id)
     WHERE p.pulled_date BETWEEN ? AND ?
-    GROUP BY i.name, p.purpose
-    ORDER BY i.name, p.purpose
+    GROUP BY root.id, root.name, p.purpose
+    ORDER BY root.name, p.purpose
   `, [startDate, endDate]);
 }
 
 function getYtdUsage({ startDate, endDate }) {
   return all(`
-    SELECT i.id, i.name, COALESCE(SUM(p.qty), 0) AS ytdUsedQty
-    FROM items i
-    LEFT JOIN inventory_pulls p ON p.item_id = i.id AND p.pulled_date BETWEEN ? AND ?
-    WHERE i.active = 1
-    GROUP BY i.id, i.name
-    ORDER BY i.name
+    SELECT root.id, root.name, COALESCE(SUM(p.qty), 0) AS ytdUsedQty
+    FROM items root
+    LEFT JOIN items source ON COALESCE(source.canonical_item_id, source.id) = root.id
+    LEFT JOIN inventory_pulls p ON p.item_id = source.id AND p.pulled_date BETWEEN ? AND ?
+    WHERE root.active = 1 AND root.canonical_item_id IS NULL
+    GROUP BY root.id, root.name
+    ORDER BY root.name
   `, [startDate, endDate]);
 }
 
 function getPullLog(limit = 500) {
   return all(`
-    SELECT p.id, p.pulled_date AS date, i.name AS item, p.qty, p.pulled_by AS pulledBy, p.purpose, p.notes
-    FROM inventory_pulls p JOIN items i ON i.id = p.item_id
+    SELECT p.id, p.pulled_date AS date, i.name AS item, c.name AS canonicalItem,
+      p.qty, p.pulled_by AS pulledBy, p.purpose, p.notes
+    FROM inventory_pulls p
+    JOIN items i ON i.id = p.item_id
+    LEFT JOIN items c ON c.id = i.canonical_item_id
     ORDER BY p.pulled_date DESC, p.id DESC
     LIMIT ?
   `, [limit]);
@@ -308,19 +427,20 @@ function getPullLog(limit = 500) {
 
 function getUsageAnalysis(itemIds = []) {
   const ids = itemIds.map(Number).filter(id => Number.isInteger(id) && id > 0);
-  const where = ids.length ? `WHERE p.item_id IN (${ids.map(() => "?").join(", ")})` : "";
+  const where = ids.length ? `WHERE root.id IN (${ids.map(() => "?").join(", ")})` : "";
   return all(`
     SELECT
-      p.item_id AS itemId,
-      i.name AS item,
+      root.id AS itemId,
+      root.name AS item,
       p.pulled_date AS date,
       SUM(p.qty) AS qty
     FROM inventory_pulls p
-    JOIN items i ON i.id = p.item_id
+    JOIN items source ON source.id = p.item_id
+    JOIN items root ON root.id = COALESCE(source.canonical_item_id, source.id)
     ${where}
-    GROUP BY p.item_id, i.name, p.pulled_date
-    ORDER BY p.pulled_date, i.name
+    GROUP BY root.id, root.name, p.pulled_date
+    ORDER BY p.pulled_date, root.name
   `, ids);
 }
 
-module.exports = { listItems, setItemActive, findInactiveItemIds, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };
+module.exports = { listItems, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };

@@ -113,6 +113,15 @@ async function initDb() {
     await run("ALTER TABLE inventory_pulls ADD COLUMN source_ref TEXT");
   }
 
+  const itemColumns = await all("PRAGMA table_info(items)");
+  if (!itemColumns.some(column => column.name === "canonical_item_id")) {
+    await run("ALTER TABLE items ADD COLUMN canonical_item_id INTEGER REFERENCES items(id)");
+  }
+  if (!itemColumns.some(column => column.name === "canonical_mapped_at")) {
+    await run("ALTER TABLE items ADD COLUMN canonical_mapped_at TEXT");
+  }
+  await run("CREATE INDEX IF NOT EXISTS idx_items_canonical_item_id ON items(canonical_item_id)");
+
   const [{ count: existing }] = await all("SELECT COUNT(*) AS count FROM items");
   if (existing === 0) {
     for (const item of seedItems) {

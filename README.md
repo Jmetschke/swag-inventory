@@ -12,6 +12,16 @@ This app skeleton converts the uploaded spreadsheet logic into a small Node/Expr
 - **YTD totals** → `/api/reports/ytd`, which sums item usage from a selected start date through an end date.
 - **Calculated count formula** → `starting_quantity + totalReceived - totalPulled`.
 
+## SKU consolidation
+
+SKUs can be consolidated non-destructively from the **SKU Management** tab. The migration adds nullable `items.canonical_item_id` and `items.canonical_mapped_at` columns; it does not delete items or update historical transaction foreign keys.
+
+- New pulls, deliveries, and audits accept active canonical SKUs only.
+- Inventory and aggregate usage reports group legacy transactions under the canonical SKU once.
+- Entries and audit history retain the original SKU and also display its current canonical SKU.
+- Mappings are direct-to-root, so self-mappings, circular mappings, and nested mapping chains are rejected.
+- A mapping can be corrected before the canonical group receives a consolidated physical audit. After that baseline exists, unsafe regrouping is rejected to prevent double-counting.
+
 ## Run locally
 
 Create a `.env` file with your Turso connection values:

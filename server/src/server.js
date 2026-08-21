@@ -60,6 +60,13 @@ app.get("/api/items", async (req, res, next) => {
 app.post("/api/items", async (req, res, next) => {
   try {
     requireFields(req.body, ["name"]);
+    const normalizedName = String(req.body.name).trim();
+    const duplicate = (await q.listItems()).find(item => item.name.trim().toLowerCase() === normalizedName.toLowerCase());
+    if (duplicate) {
+      const err = new Error(`A SKU named '${duplicate.name}' already exists`);
+      err.status = 409;
+      throw err;
+    }
     const startingQuantity = Number(req.body.startingQuantity || 0);
     const reorderLevel = Number(req.body.reorderLevel || 0);
     if (!Number.isFinite(startingQuantity) || startingQuantity < 0 || !Number.isFinite(reorderLevel) || reorderLevel < 0) {
@@ -80,6 +87,17 @@ app.patch("/api/items/:id/active", async (req, res, next) => {
       err.status = 400;
       throw err;
     }
+    const item = (await q.listItems()).find(candidate => Number(candidate.id) === id);
+    if (!item) {
+      const err = new Error("Item not found");
+      err.status = 404;
+      throw err;
+    }
+    if (req.body.active && item.canonicalItemId) {
+      const err = new Error("Mapped legacy SKUs cannot be activated; remove the mapping first");
+      err.status = 400;
+      throw err;
+    }
     const result = await q.setItemActive(id, req.body.active);
     if (!result.rowsAffected) {
       const err = new Error("Item not found");
@@ -87,6 +105,37 @@ app.patch("/api/items/:id/active", async (req, res, next) => {
       throw err;
     }
     res.json({ id, active: req.body.active });
+  } catch (err) { next(err); }
+});
+
+app.post("/api/items/map", async (req, res, next) => {
+  try {
+    const sourceIds = Array.isArray(req.body.sourceIds) ? req.body.sourceIds.map(Number) : [];
+    const canonicalId = Number(req.body.canonicalId);
+    if (!sourceIds.length || sourceIds.some(id => !Number.isInteger(id) || id <= 0) || !Number.isInteger(canonicalId) || canonicalId <= 0) {
+      const err = new Error("Select at least one valid source SKU and one canonical SKU");
+      err.status = 400;
+      throw err;
+    }
+    res.json(await q.mapItems(sourceIds, canonicalId));
+  } catch (err) { next(err); }
+});
+
+app.delete("/api/items/:id/mapping", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      const err = new Error("Invalid SKU id");
+      err.status = 400;
+      throw err;
+    }
+    const result = await q.unmapItem(id);
+    if (!result.rowsAffected) {
+      const err = new Error("Mapped SKU not found");
+      err.status = 404;
+      throw err;
+    }
+    res.json({ id, mapped: false, active: true });
   } catch (err) { next(err); }
 });
 
@@ -165,6 +214,12 @@ app.post("/api/receipts", async (req, res, next) => {
       err.status = 400;
       throw err;
     }
+    const inactiveIds = await q.findInactiveItemIds(items.map(item => item.itemId));
+    if (inactiveIds.length) {
+      const err = new Error("Legacy or inactive items cannot be used for new deliveries");
+      err.status = 400;
+      throw err;
+    }
     const results = await q.createReceipts({ ...req.body, items });
     res.status(201).json({ ids: results.map(result => result.lastInsertRowid) });
   } catch (err) { next(err); }
@@ -173,6 +228,12 @@ app.post("/api/receipts", async (req, res, next) => {
 app.post("/api/physical-counts", async (req, res, next) => {
   try {
     requireFields(req.body, ["itemId", "countedQty", "countedDate"]);
+    const inactiveIds = await q.findInactiveItemIds([Number(req.body.itemId)]);
+    if (inactiveIds.length) {
+      const err = new Error("Legacy or inactive items cannot receive new physical counts");
+      err.status = 400;
+      throw err;
+    }
     const result = await q.createPhysicalCount(req.body);
     res.status(201).json({ id: result.lastInsertRowid });
   } catch (err) { next(err); }
@@ -207,6 +268,7 @@ app.get("/api/audits/:id", async (req, res, next) => {
       createdAt: first.createdAt,
       rows: rows.filter(row => row.item).map(row => ({
         item: row.item,
+        canonicalItem: row.canonicalItem,
         countedQty: row.countedQty
       }))
     });
@@ -228,6 +290,12 @@ app.post("/api/audits", async (req, res, next) => {
     );
     if (invalid) {
       const err = new Error("Audit counts must include a valid itemId and countedQty");
+      err.status = 400;
+      throw err;
+    }
+    const inactiveIds = await q.findInactiveItemIds(normalized.map(count => count.itemId));
+    if (inactiveIds.length) {
+      const err = new Error("Legacy or inactive items cannot be included in a new audit");
       err.status = 400;
       throw err;
     }
