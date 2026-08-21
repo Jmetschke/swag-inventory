@@ -207,6 +207,21 @@
       <button>Add Item</button>
     </form>
   </dialog>
+  <dialog id="editItemDialog">
+    <div class="dialog-header">
+      <h2>Edit Inventory Item</h2>
+      <button id="closeEditItemDialog" type="button" class="secondary">Close</button>
+    </div>
+    <form id="editItemForm">
+      <input type="hidden" name="id" />
+      <label>Item Name <input name="name" required /></label>
+      <label>SKU <input name="sku" /></label>
+      <label>Reorder Level <input type="number" name="reorderLevel" min="0" required /></label>
+      <p class="field-help">Starting quantity is preserved because changing it would alter historical inventory calculations. Names with existing history are also protected; use SKU Management to consolidate them.</p>
+      <p id="editItemStatus" class="status-line"></p>
+      <button>Save Changes</button>
+    </form>
+  </dialog>
   <dialog id="receiptDialog">
     <div class="dialog-header">
       <h2>Receive Delivery</h2>

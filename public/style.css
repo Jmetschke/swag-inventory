@@ -57,6 +57,7 @@ th { background: #f0f2f5; }
 .inventory-item { border: 1px solid #d9dee6; border-radius: 8px; padding: 12px; background: #fbfcfd; }
 .inventory-item.inactive { background: #e5e7eb; border-color: #c4c8cf; color: #6b7280; }
 .inventory-item-header { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.inventory-item-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .inventory-item h3 { margin: 0 0 10px; font-size: 16px; line-height: 1.25; }
 .inventory-item-header h3 { margin-right: auto; }
 .item-status-button { padding: 6px 8px; font-size: 12px; }

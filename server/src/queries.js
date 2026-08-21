@@ -10,7 +10,9 @@ function listItems() {
       c.name AS canonicalName,
       (SELECT COUNT(*) FROM items child WHERE child.canonical_item_id = i.id) AS mappedItemCount,
       COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id), 0) AS historicalUsed,
-      COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id), 0) AS historicalReceived
+      COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id), 0) AS historicalReceived,
+      (SELECT COUNT(*) FROM audit_items ai WHERE ai.item_id = i.id) AS historicalAuditCount,
+      (SELECT COUNT(*) FROM physical_counts pc WHERE pc.item_id = i.id) AS historicalPhysicalCount
     FROM items i
     LEFT JOIN items c ON c.id = i.canonical_item_id
     ORDER BY i.active DESC, i.name
@@ -90,6 +92,15 @@ function createItem({ name, sku, reorderLevel, startingQuantity, startingDate })
     Number(reorderLevel || 0),
     Number(startingQuantity || 0),
     startingDate || "2026-03-09"
+  ]);
+}
+
+function updateItem(id, { name, sku, reorderLevel }) {
+  return run(`UPDATE items SET name = ?, sku = ?, reorder_level = ? WHERE id = ?`, [
+    name.trim(),
+    sku ? sku.trim() : null,
+    Number(reorderLevel || 0),
+    id
   ]);
 }
 
@@ -359,7 +370,9 @@ async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive
     return {
       id: Number(root.id),
       name: root.name,
+      sku: root.sku,
       active: Number(root.active),
+      reorderLevel: Number(root.reorder_level),
       startingQuantity: members.reduce((total, item) => total + Number(item.starting_quantity), 0),
       totalReceived: sum(groupReceipts),
       totalPulled: sum(groupPulls.filter(row => row.date <= asOfDate)),
@@ -443,4 +456,4 @@ function getUsageAnalysis(itemIds = []) {
   `, ids);
 }
 
-module.exports = { listItems, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };
+module.exports = { listItems, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, updateItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };

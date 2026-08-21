@@ -61,6 +61,11 @@ app.post("/api/items", async (req, res, next) => {
   try {
     requireFields(req.body, ["name"]);
     const normalizedName = String(req.body.name).trim();
+    if (!normalizedName) {
+      const err = new Error("Item name is required");
+      err.status = 400;
+      throw err;
+    }
     const duplicate = (await q.listItems()).find(item => item.name.trim().toLowerCase() === normalizedName.toLowerCase());
     if (duplicate) {
       const err = new Error(`A SKU named '${duplicate.name}' already exists`);
@@ -76,6 +81,47 @@ app.post("/api/items", async (req, res, next) => {
     }
     const result = await q.createItem({ ...req.body, startingQuantity, reorderLevel });
     res.status(201).json({ id: result.lastInsertRowid });
+  } catch (err) { next(err); }
+});
+
+app.patch("/api/items/:id", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    requireFields(req.body, ["name"]);
+    const reorderLevel = Number(req.body.reorderLevel || 0);
+    if (!Number.isInteger(id) || id <= 0 || !Number.isFinite(reorderLevel) || reorderLevel < 0) {
+      const err = new Error("A valid item id and non-negative reorder level are required");
+      err.status = 400;
+      throw err;
+    }
+    const normalizedName = String(req.body.name).trim();
+    const existingItems = await q.listItems();
+    const item = existingItems.find(candidate => Number(candidate.id) === id);
+    if (!item) {
+      const err = new Error("Item not found");
+      err.status = 404;
+      throw err;
+    }
+    if (!normalizedName) {
+      const err = new Error("Item name is required");
+      err.status = 400;
+      throw err;
+    }
+    const hasHistory = Number(item.historicalUsed) > 0 || Number(item.historicalReceived) > 0 ||
+      Number(item.historicalAuditCount) > 0 || Number(item.historicalPhysicalCount) > 0;
+    if (hasHistory && normalizedName !== item.name) {
+      const err = new Error("This item has historical activity, so its name cannot be changed. Create or map to a canonical SKU instead.");
+      err.status = 409;
+      throw err;
+    }
+    const duplicate = existingItems.find(candidate => Number(candidate.id) !== id && candidate.name.trim().toLowerCase() === normalizedName.toLowerCase());
+    if (duplicate) {
+      const err = new Error(`A SKU named '${duplicate.name}' already exists`);
+      err.status = 409;
+      throw err;
+    }
+    const result = await q.updateItem(id, { ...req.body, name: normalizedName, reorderLevel });
+    res.json({ id, rowsAffected: result.rowsAffected });
   } catch (err) { next(err); }
 });
 

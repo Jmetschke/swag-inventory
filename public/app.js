@@ -100,8 +100,14 @@ document.getElementById('openReceiptDialog').addEventListener('click', () => doc
 document.getElementById('openReceiptFromEntries').addEventListener('click', () => document.getElementById('receiptDialog').showModal());
 document.getElementById('openCanonicalDialog').addEventListener('click', () => document.getElementById('itemDialog').showModal());
 document.getElementById('closeItemDialog').addEventListener('click', () => document.getElementById('itemDialog').close());
+document.getElementById('closeEditItemDialog').addEventListener('click', () => document.getElementById('editItemDialog').close());
 document.getElementById('closeReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').close());
 document.getElementById('inventoryTab').addEventListener('click', async (e) => {
+  const editButton = e.target.closest('button[data-edit-item-id]');
+  if (editButton) {
+    openEditItemDialog(Number(editButton.dataset.editItemId));
+    return;
+  }
   const button = e.target.closest('button[data-item-id]');
   if (!button) return;
   button.disabled = true;
@@ -155,6 +161,45 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
   await refreshAudit();
   await runWeeklyReport();
 });
+
+document.getElementById('editItemForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = formData(e.target);
+  const id = Number(body.id);
+  body.reorderLevel = Number(body.reorderLevel || 0);
+  delete body.id;
+  const status = document.getElementById('editItemStatus');
+  status.textContent = 'Saving changes...';
+  try {
+    await action(`/api/items/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    document.getElementById('editItemDialog').close();
+    await loadItems();
+    renderAnalysisProducts();
+    renderSkuManagement();
+    await refreshInventory();
+    await refreshAudit();
+    await runWeeklyReport();
+    await refreshEntries();
+  } catch (err) {
+    status.textContent = err.message;
+  }
+});
+
+function openEditItemDialog(id) {
+  const item = items.find(candidate => Number(candidate.id) === id);
+  if (!item) return;
+  const form = document.getElementById('editItemForm');
+  form.elements.id.value = item.id;
+  form.elements.name.value = item.name;
+  form.elements.sku.value = item.sku || '';
+  form.elements.reorderLevel.value = item.reorder_level || 0;
+  document.getElementById('editItemStatus').textContent = '';
+  document.getElementById('editItemDialog').showModal();
+}
 
 document.getElementById('pullForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -626,11 +671,16 @@ function renderInventoryList(rows) {
     <article class="inventory-item${row.active ? '' : ' inactive'}">
       <div class="inventory-item-header">
         <h3>${escapeHtml(row.name)}${row.componentCount > 1 ? ` <span class="status-badge">${row.componentCount} SKUs</span>` : ''}</h3>
-        <button type="button" class="secondary item-status-button" data-item-id="${row.id}" data-active="${Boolean(row.active)}">
-          ${row.active ? 'Deactivate' : 'Activate'}
-        </button>
+        <div class="inventory-item-actions">
+          <button type="button" class="secondary item-status-button" data-edit-item-id="${row.id}">Edit</button>
+          <button type="button" class="secondary item-status-button" data-item-id="${row.id}" data-active="${Boolean(row.active)}">
+            ${row.active ? 'Deactivate' : 'Activate'}
+          </button>
+        </div>
       </div>
       <dl>
+        <div><dt>SKU</dt><dd>${escapeHtml(row.sku || '—')}</dd></div>
+        <div><dt>Reorder Level</dt><dd>${row.reorderLevel}</dd></div>
         <div><dt>Starting</dt><dd>${row.startingQuantity}</dd></div>
         <div><dt>Received</dt><dd>${row.totalReceived}</dd></div>
         <div><dt>Pulled</dt><dd>${row.totalPulled}</dd></div>
