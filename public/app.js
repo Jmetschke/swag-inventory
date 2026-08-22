@@ -65,6 +65,7 @@ async function uploadItemImage(itemId, file) {
 async function loadItems(includeStats = false) {
   items = await action(`/api/items${includeStats ? '?includeStats=true' : ''}`);
   refreshItemSelects();
+  renderOnHandProducts();
 }
 
 function setFormBusy(form, busy, statusId, message = 'Saving...') {
@@ -371,6 +372,9 @@ document.getElementById('analysisGranularity').addEventListener('change', render
 document.getElementById('analysisProducts').addEventListener('change', refreshAnalysis);
 document.getElementById('selectAllAnalysis').addEventListener('click', () => setAnalysisProducts(true));
 document.getElementById('clearAnalysis').addEventListener('click', () => setAnalysisProducts(false));
+document.getElementById('selectAllOnHand').addEventListener('click', () => setOnHandProducts(true));
+document.getElementById('clearOnHand').addEventListener('click', () => setOnHandProducts(false));
+document.getElementById('runOnHandLookup').addEventListener('click', runOnHandLookup);
 document.getElementById('mapSkus').addEventListener('click', mapSelectedSkus);
 document.getElementById('skuManagementTable').addEventListener('click', async (e) => {
   const editButton = e.target.closest('button[data-edit-item-id]');
@@ -511,6 +515,9 @@ function renderAnalysisProducts() {
       <span>${escapeHtml(item.name)}${item.active ? '' : ' (inactive)'}</span>
     </label>
   `).join('');
+  if (!document.querySelector('#onHandTable thead')) {
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], []);
+  }
 }
 
 function setAnalysisProducts(checked) {
@@ -520,6 +527,54 @@ function setAnalysisProducts(checked) {
 
 function selectedAnalysisItems() {
   return [...document.querySelectorAll('#analysisProducts input:checked')].map(input => Number(input.value));
+}
+
+function renderOnHandProducts() {
+  const container = document.getElementById('onHandProducts');
+  if (!container) return;
+  const selected = new Set([...container.querySelectorAll('input:checked')].map(input => Number(input.value)));
+  container.innerHTML = items.filter(item => !item.canonicalItemId).map(item => `
+    <label><input type="checkbox" value="${item.id}"${selected.has(Number(item.id)) ? ' checked' : ''} />
+      <span>${escapeHtml(item.name)}${item.active ? '' : ' (inactive)'}</span>
+    </label>
+  `).join('');
+}
+
+function setOnHandProducts(checked) {
+  document.querySelectorAll('#onHandProducts input').forEach(input => { input.checked = checked; });
+  if (!checked) {
+    document.getElementById('onHandStatus').textContent = 'Select products to create an on-hand list.';
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], []);
+  }
+}
+
+async function runOnHandLookup() {
+  const selectedIds = new Set([...document.querySelectorAll('#onHandProducts input:checked')].map(input => Number(input.value)));
+  const status = document.getElementById('onHandStatus');
+  const button = document.getElementById('runOnHandLookup');
+  if (!selectedIds.size) {
+    status.textContent = 'Select at least one product.';
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], []);
+    return;
+  }
+  button.disabled = true;
+  status.textContent = 'Loading current inventory...';
+  try {
+    const params = new URLSearchParams({ asOf: today, startDate: today, endDate: today, includeInactive: 'true' });
+    const inventory = await action(`/api/inventory?${params}`);
+    const rows = inventory.filter(row => selectedIds.has(Number(row.id)));
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], rows.map(row => [
+      imageMarkup(row.imageUrl, row.name, 'table-thumbnail'),
+      escapeHtml(row.name),
+      escapeHtml(row.sku || ''),
+      Number(row.calculatedOnHand).toLocaleString()
+    ]), { allowHtml: true });
+    status.textContent = `${rows.length} selected product${rows.length === 1 ? '' : 's'} as of ${today}.`;
+  } catch (err) {
+    status.textContent = err.message;
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function refreshAnalysis() {

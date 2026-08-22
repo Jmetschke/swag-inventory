@@ -144,6 +144,25 @@
       <h2>Month-to-Month Usage</h2>
       <div class="table-scroll"><table id="analysisMonthlyTable"></table></div>
     </section>
+    <section class="card wide">
+      <div class="analysis-heading">
+        <div>
+          <h2>Current On-Hand Lookup</h2>
+          <p>Select only the products you want and generate a simple current inventory list.</p>
+        </div>
+        <button id="runOnHandLookup" type="button">Show Selected Inventory</button>
+      </div>
+      <fieldset class="on-hand-filter">
+        <legend>Products</legend>
+        <div class="product-actions">
+          <button id="selectAllOnHand" type="button" class="secondary">Select all</button>
+          <button id="clearOnHand" type="button" class="secondary">Clear</button>
+        </div>
+        <div id="onHandProducts" class="product-filter"></div>
+      </fieldset>
+      <p id="onHandStatus" class="status-line">Select products to create an on-hand list.</p>
+      <div class="table-scroll"><table id="onHandTable"></table></div>
+    </section>
   </main>
 
   <main id="skuTab" class="tab-panel">
