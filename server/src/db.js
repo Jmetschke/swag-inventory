@@ -121,6 +121,15 @@ async function initDb() {
     await run("ALTER TABLE items ADD COLUMN canonical_mapped_at TEXT");
   }
   await run("CREATE INDEX IF NOT EXISTS idx_items_canonical_item_id ON items(canonical_item_id)");
+  await run("CREATE INDEX IF NOT EXISTS idx_pulls_item_date ON inventory_pulls(item_id, pulled_date)");
+  await run("CREATE INDEX IF NOT EXISTS idx_pulls_date ON inventory_pulls(pulled_date)");
+  await run("CREATE INDEX IF NOT EXISTS idx_pulls_source_ref ON inventory_pulls(source_ref)");
+  await run("CREATE INDEX IF NOT EXISTS idx_receipts_item_date ON inventory_receipts(item_id, received_date)");
+  await run("CREATE INDEX IF NOT EXISTS idx_receipts_date ON inventory_receipts(received_date)");
+  await run("CREATE INDEX IF NOT EXISTS idx_counts_item_date ON physical_counts(item_id, counted_date)");
+  await run("CREATE INDEX IF NOT EXISTS idx_counts_date ON physical_counts(counted_date)");
+  await run("CREATE INDEX IF NOT EXISTS idx_counts_item_created ON physical_counts(item_id, created_at)");
+  await run("CREATE INDEX IF NOT EXISTS idx_audit_items_item ON audit_items(item_id)");
 
   const [{ count: existing }] = await all("SELECT COUNT(*) AS count FROM items");
   if (existing === 0) {

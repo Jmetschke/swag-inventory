@@ -53,7 +53,7 @@ function normalizeLineItems(body) {
 
 app.get("/api/items", async (req, res, next) => {
   try {
-    res.json(await q.listItems());
+    res.json(await (req.query.includeStats === "true" ? q.listItemsWithStats() : q.listItems()));
   } catch (err) { next(err); }
 });
 
@@ -66,7 +66,7 @@ app.post("/api/items", async (req, res, next) => {
       err.status = 400;
       throw err;
     }
-    const duplicate = (await q.listItems()).find(item => item.name.trim().toLowerCase() === normalizedName.toLowerCase());
+    const [duplicate] = await q.findItemByName(normalizedName);
     if (duplicate) {
       const err = new Error(`A SKU named '${duplicate.name}' already exists`);
       err.status = 409;
@@ -95,8 +95,10 @@ app.patch("/api/items/:id", async (req, res, next) => {
       throw err;
     }
     const normalizedName = String(req.body.name).trim();
-    const existingItems = await q.listItems();
-    const item = existingItems.find(candidate => Number(candidate.id) === id);
+    const [[item], [duplicate]] = await Promise.all([
+      q.getItemForEdit(id),
+      q.findItemByName(normalizedName, id)
+    ]);
     if (!item) {
       const err = new Error("Item not found");
       err.status = 404;
@@ -114,7 +116,6 @@ app.patch("/api/items/:id", async (req, res, next) => {
       err.status = 409;
       throw err;
     }
-    const duplicate = existingItems.find(candidate => Number(candidate.id) !== id && candidate.name.trim().toLowerCase() === normalizedName.toLowerCase());
     if (duplicate) {
       const err = new Error(`A SKU named '${duplicate.name}' already exists`);
       err.status = 409;

@@ -8,15 +8,51 @@ function listItems() {
       i.canonical_item_id AS canonicalItemId,
       i.canonical_mapped_at AS canonicalMappedAt,
       c.name AS canonicalName,
-      (SELECT COUNT(*) FROM items child WHERE child.canonical_item_id = i.id) AS mappedItemCount,
-      COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id), 0) AS historicalUsed,
-      COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id), 0) AS historicalReceived,
-      (SELECT COUNT(*) FROM audit_items ai WHERE ai.item_id = i.id) AS historicalAuditCount,
-      (SELECT COUNT(*) FROM physical_counts pc WHERE pc.item_id = i.id) AS historicalPhysicalCount
+      COALESCE(children.mappedItemCount, 0) AS mappedItemCount
     FROM items i
     LEFT JOIN items c ON c.id = i.canonical_item_id
+    LEFT JOIN (
+      SELECT canonical_item_id, COUNT(*) AS mappedItemCount
+      FROM items WHERE canonical_item_id IS NOT NULL GROUP BY canonical_item_id
+    ) children ON children.canonical_item_id = i.id
     ORDER BY i.active DESC, i.name
   `);
+}
+
+function listItemsWithStats() {
+  return all(`
+    SELECT
+      i.*,
+      i.canonical_item_id AS canonicalItemId,
+      i.canonical_mapped_at AS canonicalMappedAt,
+      c.name AS canonicalName,
+      COALESCE(children.mappedItemCount, 0) AS mappedItemCount,
+      COALESCE(usage.historicalUsed, 0) AS historicalUsed,
+      COALESCE(receiving.historicalReceived, 0) AS historicalReceived,
+      COALESCE(audits.historicalAuditCount, 0) AS historicalAuditCount,
+      COALESCE(counts.historicalPhysicalCount, 0) AS historicalPhysicalCount
+    FROM items i
+    LEFT JOIN items c ON c.id = i.canonical_item_id
+    LEFT JOIN (SELECT canonical_item_id, COUNT(*) AS mappedItemCount FROM items WHERE canonical_item_id IS NOT NULL GROUP BY canonical_item_id) children ON children.canonical_item_id = i.id
+    LEFT JOIN (SELECT item_id, SUM(qty) AS historicalUsed FROM inventory_pulls GROUP BY item_id) usage ON usage.item_id = i.id
+    LEFT JOIN (SELECT item_id, SUM(qty) AS historicalReceived FROM inventory_receipts GROUP BY item_id) receiving ON receiving.item_id = i.id
+    LEFT JOIN (SELECT item_id, COUNT(*) AS historicalAuditCount FROM audit_items GROUP BY item_id) audits ON audits.item_id = i.id
+    LEFT JOIN (SELECT item_id, COUNT(*) AS historicalPhysicalCount FROM physical_counts GROUP BY item_id) counts ON counts.item_id = i.id
+    ORDER BY i.active DESC, i.name
+  `);
+}
+
+function findItemByName(name, excludeId = 0) {
+  return all("SELECT id, name FROM items WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) AND id != ? LIMIT 1", [name, excludeId]);
+}
+
+function getItemForEdit(id) {
+  return all(`SELECT i.*,
+    COALESCE((SELECT SUM(p.qty) FROM inventory_pulls p WHERE p.item_id = i.id), 0) AS historicalUsed,
+    COALESCE((SELECT SUM(r.qty) FROM inventory_receipts r WHERE r.item_id = i.id), 0) AS historicalReceived,
+    (SELECT COUNT(*) FROM audit_items ai WHERE ai.item_id = i.id) AS historicalAuditCount,
+    (SELECT COUNT(*) FROM physical_counts pc WHERE pc.item_id = i.id) AS historicalPhysicalCount
+    FROM items i WHERE i.id = ?`, [id]);
 }
 
 function setItemActive(id, active) {
@@ -318,8 +354,10 @@ async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive
   const pullThrough = endDate > asOfDate ? endDate : asOfDate;
   const [itemRows, receipts, pulls, counts] = await Promise.all([
     listItems(),
-    all("SELECT item_id AS itemId, qty, received_date AS date FROM inventory_receipts WHERE received_date <= ?", [asOfDate]),
-    all("SELECT item_id AS itemId, qty, pulled_date AS date FROM inventory_pulls WHERE pulled_date <= ?", [pullThrough]),
+    all(`SELECT item_id AS itemId, SUM(qty) AS qty, received_date AS date
+      FROM inventory_receipts WHERE received_date <= ? GROUP BY item_id, received_date`, [asOfDate]),
+    all(`SELECT item_id AS itemId, SUM(qty) AS qty, pulled_date AS date
+      FROM inventory_pulls WHERE pulled_date <= ? GROUP BY item_id, pulled_date`, [pullThrough]),
     all(`SELECT id, item_id AS itemId, counted_qty AS qty, counted_date AS date, created_at AS createdAt
       FROM physical_counts WHERE counted_date <= ? ORDER BY counted_date DESC, id DESC`, [asOfDate])
   ]);
@@ -330,18 +368,28 @@ async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive
     if (membersByRoot.has(rootId)) membersByRoot.get(rootId).push(item);
   }
   const sum = rows => rows.reduce((total, row) => total + Number(row.qty), 0);
-  const rowsFor = (rows, memberIds, predicate = () => true) => rows.filter(row => memberIds.has(Number(row.itemId)) && predicate(row));
-  const latestCountFor = itemId => counts.find(count => Number(count.itemId) === Number(itemId));
+  const groupByItem = rows => {
+    const grouped = new Map();
+    for (const row of rows) {
+      const itemId = Number(row.itemId);
+      if (!grouped.has(itemId)) grouped.set(itemId, []);
+      grouped.get(itemId).push(row);
+    }
+    return grouped;
+  };
+  const receiptsByItem = groupByItem(receipts);
+  const pullsByItem = groupByItem(pulls);
+  const countsByItem = groupByItem(counts);
+  const latestCountFor = itemId => (countsByItem.get(Number(itemId)) || [])[0];
 
   return roots.map(root => {
     const members = membersByRoot.get(Number(root.id));
-    const memberIds = new Set(members.map(item => Number(item.id)));
-    const groupReceipts = rowsFor(receipts, memberIds);
-    const groupPulls = rowsFor(pulls, memberIds);
+    const groupReceipts = members.flatMap(item => receiptsByItem.get(Number(item.id)) || []);
+    const groupPulls = members.flatMap(item => pullsByItem.get(Number(item.id)) || []);
     const mappedChildren = members.filter(item => Number(item.id) !== Number(root.id));
     const latestMappedAt = mappedChildren.map(item => item.canonicalMappedAt).filter(Boolean).sort().at(-1);
     const groupReset = latestMappedAt
-      ? counts.find(count => Number(count.itemId) === Number(root.id) && count.createdAt >= latestMappedAt)
+      ? (countsByItem.get(Number(root.id)) || []).find(count => count.createdAt >= latestMappedAt)
       : null;
 
     let calculatedOnHand;
@@ -362,7 +410,8 @@ async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive
           + sum(groupReceipts.filter(row => Number(row.itemId) === Number(member.id) && row.date > after))
           - sum(groupPulls.filter(row => Number(row.itemId) === Number(member.id) && row.date <= asOfDate && row.date > after));
       }, 0);
-      const latestMemberCount = counts.find(count => memberIds.has(Number(count.itemId)));
+      const latestMemberCount = members.map(item => latestCountFor(item.id)).filter(Boolean)
+        .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id))[0];
       lastCountedQty = latestMemberCount ? Number(latestMemberCount.qty) : null;
       lastCountedDate = latestMemberCount ? latestMemberCount.date : null;
     }
@@ -456,4 +505,4 @@ function getUsageAnalysis(itemIds = []) {
   `, ids);
 }
 
-module.exports = { listItems, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, updateItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };
+module.exports = { listItems, listItemsWithStats, findItemByName, getItemForEdit, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, updateItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };

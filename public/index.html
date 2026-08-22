@@ -78,8 +78,9 @@
             <option>Delivery/Client</option><option>Event/Promo</option><option>Employee</option><option>Other</option>
           </select>
         </label>
-        <label>Notes <input name="notes" /></label>
-        <button>Save Pull</button>
+      <label>Notes <input name="notes" /></label>
+      <p id="pullStatus" class="status-line"></p>
+      <button>Save Pull</button>
       </form>
     </section>
   </main>
@@ -184,6 +185,7 @@
           <button>Submit Audit</button>
           <button id="printAudit" type="button" class="secondary">Print Count Sheet</button>
         </div>
+        <p id="auditStatus" class="status-line"></p>
         <table id="auditTable"></table>
       </form>
     </section>
@@ -204,6 +206,7 @@
       <label>Starting QTY <input type="number" name="startingQuantity" min="0" value="0" required /></label>
       <label>Reorder Level <input type="number" name="reorderLevel" min="0" value="0" /></label>
       <label>Starting Date <input type="date" name="startingDate" /></label>
+      <p id="itemStatus" class="status-line"></p>
       <button>Add Item</button>
     </form>
   </dialog>
@@ -239,6 +242,7 @@
       </div>
       <label>Received By <input name="receivedBy" /></label>
       <label>Notes <input name="notes" /></label>
+      <p id="receiptStatus" class="status-line"></p>
       <button>Save Delivery</button>
     </form>
   </dialog>

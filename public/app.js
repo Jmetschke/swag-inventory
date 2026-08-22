@@ -6,14 +6,9 @@ document.querySelectorAll('input[type="date"]').forEach(input => input.value = t
 
 loadItems().then(() => {
   renderAnalysisProducts();
-  renderSkuManagement();
   addLineItem('pullItems', 1);
   addLineItem('receiptItems', 0);
-  refreshInventory();
-  runWeeklyReport();
-  refreshAudit();
-  refreshAuditHistory();
-  refreshEntries();
+  Promise.all([refreshInventory(), runWeeklyReport()]);
 });
 
 async function action(url, options) {
@@ -37,9 +32,19 @@ function escapeHtml(value) {
   }[char]));
 }
 
-async function loadItems() {
-  items = await action('/api/items');
+async function loadItems(includeStats = false) {
+  items = await action(`/api/items${includeStats ? '?includeStats=true' : ''}`);
   refreshItemSelects();
+}
+
+function setFormBusy(form, busy, statusId, message = 'Saving...') {
+  const submit = form.querySelector('button[type="submit"], button:not([type])');
+  if (submit) submit.disabled = busy;
+  if (statusId) document.getElementById(statusId).textContent = busy ? message : '';
+}
+
+function isTabActive(id) {
+  return document.getElementById(id).classList.contains('active');
 }
 
 function itemOptions(includeInactive = false) {
@@ -95,10 +100,18 @@ async function postJson(url, body) {
 
 document.getElementById('addPullItem').addEventListener('click', () => addLineItem('pullItems', 1));
 document.getElementById('addReceiptItem').addEventListener('click', () => addLineItem('receiptItems', 0));
-document.getElementById('openItemDialog').addEventListener('click', () => document.getElementById('itemDialog').showModal());
-document.getElementById('openReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').showModal());
-document.getElementById('openReceiptFromEntries').addEventListener('click', () => document.getElementById('receiptDialog').showModal());
-document.getElementById('openCanonicalDialog').addEventListener('click', () => document.getElementById('itemDialog').showModal());
+function openItemDialog() {
+  document.getElementById('itemStatus').textContent = '';
+  document.getElementById('itemDialog').showModal();
+}
+function openReceiptDialog() {
+  document.getElementById('receiptStatus').textContent = '';
+  document.getElementById('receiptDialog').showModal();
+}
+document.getElementById('openItemDialog').addEventListener('click', openItemDialog);
+document.getElementById('openReceiptDialog').addEventListener('click', openReceiptDialog);
+document.getElementById('openReceiptFromEntries').addEventListener('click', openReceiptDialog);
+document.getElementById('openCanonicalDialog').addEventListener('click', openItemDialog);
 document.getElementById('closeItemDialog').addEventListener('click', () => document.getElementById('itemDialog').close());
 document.getElementById('closeEditItemDialog').addEventListener('click', () => document.getElementById('editItemDialog').close());
 document.getElementById('closeReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').close());
@@ -117,10 +130,7 @@ document.getElementById('inventoryTab').addEventListener('click', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ active: button.dataset.active !== 'true' })
     });
-    await loadItems();
-    await refreshInventory();
-    await refreshAudit();
-    await runWeeklyReport();
+    await Promise.all([loadItems(), refreshInventory(), runWeeklyReport()]);
   } catch (err) {
     button.disabled = false;
     window.alert(err.message);
@@ -131,15 +141,16 @@ document.querySelectorAll('.tab-button').forEach(button => {
   button.addEventListener('click', async () => {
     document.querySelectorAll('.tab-button').forEach(tab => tab.classList.toggle('active', tab === button));
     document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === button.dataset.tab));
-    if (button.dataset.tab === 'auditTab') {
-      await refreshAudit();
-      await refreshAuditHistory();
+    if (button.dataset.tab === 'inventoryTab') {
+      await Promise.all([refreshInventory(), runWeeklyReport()]);
+    } else if (button.dataset.tab === 'auditTab') {
+      await Promise.all([refreshAudit(), refreshAuditHistory()]);
     } else if (button.dataset.tab === 'entriesTab') {
       await refreshEntries();
     } else if (button.dataset.tab === 'analysisTab') {
       await refreshAnalysis();
     } else if (button.dataset.tab === 'skuTab') {
-      await loadItems();
+      await loadItems(true);
       renderSkuManagement();
     }
   });
@@ -150,16 +161,24 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
   const body = formData(e.target);
   body.startingQuantity = Number(body.startingQuantity || 0);
   body.reorderLevel = Number(body.reorderLevel || 0);
-  await postJson('/api/items', body);
-  e.target.reset();
-  e.target.querySelector('input[name="startingDate"]').value = today;
-  document.getElementById('itemDialog').close();
-  await loadItems();
-  renderAnalysisProducts();
-  renderSkuManagement();
-  await refreshInventory();
-  await refreshAudit();
-  await runWeeklyReport();
+  setFormBusy(e.target, true, 'itemStatus', 'Adding item...');
+  try {
+    await postJson('/api/items', body);
+    e.target.reset();
+    e.target.querySelector('input[name="startingDate"]').value = today;
+    document.getElementById('itemDialog').close();
+    const skuManagementOpen = isTabActive('skuTab');
+    const refreshes = [loadItems(skuManagementOpen)];
+    if (isTabActive('inventoryTab')) refreshes.push(refreshInventory());
+    await Promise.all(refreshes);
+    renderAnalysisProducts();
+    if (skuManagementOpen) renderSkuManagement('Canonical SKU created.');
+  } catch (err) {
+    document.getElementById('itemStatus').textContent = err.message;
+  } finally {
+    const submit = e.target.querySelector('button[type="submit"], button:not([type])');
+    if (submit) submit.disabled = false;
+  }
 });
 
 document.getElementById('editItemForm').addEventListener('submit', async (e) => {
@@ -169,7 +188,7 @@ document.getElementById('editItemForm').addEventListener('submit', async (e) => 
   body.reorderLevel = Number(body.reorderLevel || 0);
   delete body.id;
   const status = document.getElementById('editItemStatus');
-  status.textContent = 'Saving changes...';
+  setFormBusy(e.target, true, 'editItemStatus', 'Saving changes...');
   try {
     await action(`/api/items/${id}`, {
       method: 'PATCH',
@@ -177,15 +196,13 @@ document.getElementById('editItemForm').addEventListener('submit', async (e) => 
       body: JSON.stringify(body)
     });
     document.getElementById('editItemDialog').close();
-    await loadItems();
+    await Promise.all([loadItems(), refreshInventory()]);
     renderAnalysisProducts();
-    renderSkuManagement();
-    await refreshInventory();
-    await refreshAudit();
-    await runWeeklyReport();
-    await refreshEntries();
   } catch (err) {
     status.textContent = err.message;
+  } finally {
+    const submit = e.target.querySelector('button[type="submit"], button:not([type])');
+    if (submit) submit.disabled = false;
   }
 });
 
@@ -205,19 +222,35 @@ document.getElementById('pullForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = formData(e.target);
   body.items = getLineItems('pullItems');
-  await postJson('/api/pulls', body);
-  e.target.reset(); resetLineItems('pullItems', 1); document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
-  await refreshInventory(); await refreshAudit(); await runWeeklyReport(); await refreshEntries();
+  setFormBusy(e.target, true, 'pullStatus', 'Saving pull...');
+  try {
+    await postJson('/api/pulls', body);
+    e.target.reset(); resetLineItems('pullItems', 1); document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
+    document.getElementById('pullStatus').textContent = 'Pull saved.';
+  } catch (err) {
+    document.getElementById('pullStatus').textContent = err.message;
+  } finally {
+    const submit = e.target.querySelector('button[type="submit"], button:not([type])');
+    if (submit) submit.disabled = false;
+  }
 });
 
 document.getElementById('receiptForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = formData(e.target);
   body.items = getLineItems('receiptItems');
-  await postJson('/api/receipts', body);
-  e.target.reset(); resetLineItems('receiptItems', 0); document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
-  document.getElementById('receiptDialog').close();
-  await refreshInventory(); await refreshAudit();
+  setFormBusy(e.target, true, 'receiptStatus', 'Saving delivery...');
+  try {
+    await postJson('/api/receipts', body);
+    e.target.reset(); resetLineItems('receiptItems', 0); document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
+    document.getElementById('receiptDialog').close();
+    if (isTabActive('inventoryTab')) await refreshInventory();
+  } catch (err) {
+    document.getElementById('receiptStatus').textContent = err.message;
+  } finally {
+    const submit = e.target.querySelector('button[type="submit"], button:not([type])');
+    if (submit) submit.disabled = false;
+  }
 });
 
 document.getElementById('refresh').addEventListener('click', refreshInventory);
@@ -236,10 +269,9 @@ document.getElementById('skuManagementTable').addEventListener('click', async (e
   button.disabled = true;
   try {
     await action(`/api/items/${button.dataset.unmapId}/mapping`, { method: 'DELETE' });
-    await loadItems();
+    await loadItems(true);
     renderAnalysisProducts();
     renderSkuManagement('Mapping removed. The SKU is active again.');
-    await refreshInventory();
   } catch (err) {
     renderSkuManagement(err.message);
   }
@@ -271,11 +303,18 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
       countedQty: Number(input.value === '' ? input.dataset.knownCount : input.value)
     }))
     .filter(count => Number.isInteger(count.countedQty));
-  await postJson('/api/audits', body);
-  [...document.querySelectorAll('#auditTable input[name="countedQty"]')].forEach(input => input.value = '');
-  await refreshInventory();
-  await refreshAudit();
-  await refreshAuditHistory();
+  setFormBusy(e.target, true, 'auditStatus', 'Saving audit...');
+  try {
+    await postJson('/api/audits', body);
+    [...document.querySelectorAll('#auditTable input[name="countedQty"]')].forEach(input => input.value = '');
+    await Promise.all([refreshAudit(), refreshAuditHistory()]);
+    document.getElementById('auditStatus').textContent = 'Audit saved.';
+  } catch (err) {
+    document.getElementById('auditStatus').textContent = err.message;
+  } finally {
+    const submit = e.target.querySelector('button[type="submit"], button:not([type])');
+    if (submit) submit.disabled = false;
+  }
 });
 
 async function refreshInventory() {
@@ -338,12 +377,9 @@ async function mapSelectedSkus() {
   status.textContent = 'Saving mapping...';
   try {
     await postJson('/api/items/map', { sourceIds, canonicalId });
-    await loadItems();
+    await loadItems(true);
     renderAnalysisProducts();
     renderSkuManagement(`${sources.length} SKU${sources.length === 1 ? '' : 's'} mapped to ${canonical.name}.`);
-    await refreshInventory();
-    await refreshAudit();
-    await runWeeklyReport();
   } catch (err) {
     status.textContent = err.message;
   }
@@ -497,9 +533,6 @@ async function uploadEntriesFile() {
     status.textContent = `Inserted ${result.inserted} new entries. Skipped ${result.skipped} duplicates.${dateRange}`;
     input.value = '';
     await refreshEntries();
-    await refreshInventory();
-    await refreshAudit();
-    await runWeeklyReport();
   } catch (err) {
     status.textContent = err.message;
   }
