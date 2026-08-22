@@ -649,16 +649,22 @@ function renderAnalysis() {
   const total = analysisRows.reduce((sum, row) => sum + Number(row.qty), 0);
   const granularity = document.getElementById('analysisGranularity').value;
   const dates = analysisRows.map(row => row.date).sort();
-  const periods = dates.length
-    ? periodCount(parseUsageDate(dates[0]), parseUsageDate(dates[dates.length - 1]), granularity)
-    : 0;
   document.getElementById('analysisTotal').textContent = total.toLocaleString();
-  document.getElementById('analysisAverageLabel').textContent = `Average per ${granularity}`;
-  document.getElementById('analysisAverage').textContent = periods ? (total / periods).toLocaleString(undefined, { maximumFractionDigits: 1 }) : '0';
   document.getElementById('analysisRange').textContent = dates.length ? `${dates[0]} – ${dates[dates.length - 1]}` : 'No usage';
 
   const selectedIds = new Set(selectedAnalysisItems());
   const selectedItems = items.filter(item => selectedIds.has(Number(item.id)));
+  document.getElementById('analysisAverageHeading').textContent = `Average per ${granularity} by product`;
+  document.getElementById('analysisAverageList').innerHTML = selectedItems.map(item => {
+    const rows = analysisRows.filter(row => Number(row.itemId) === Number(item.id));
+    const itemDates = rows.map(row => row.date).sort();
+    const itemTotal = rows.reduce((sum, row) => sum + Number(row.qty), 0);
+    const periods = itemDates.length
+      ? periodCount(parseUsageDate(itemDates[0]), parseUsageDate(itemDates[itemDates.length - 1]), granularity)
+      : 0;
+    const average = periods ? itemTotal / periods : 0;
+    return `<article><strong>${escapeHtml(item.name)}</strong><span>${average.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span></article>`;
+  }).join('');
   if (!dates.length) {
     renderTable('analysisMonthlyTable', ['Month', ...selectedItems.map(item => item.name), 'Total'], []);
     return;
