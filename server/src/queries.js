@@ -4,7 +4,7 @@ const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 function listItems() {
   return all(`
     SELECT
-      i.*,
+      i.id, i.name, i.sku, i.active, i.reorder_level, i.starting_quantity, i.starting_date, i.image_url,
       i.canonical_item_id AS canonicalItemId,
       i.canonical_mapped_at AS canonicalMappedAt,
       c.name AS canonicalName,
@@ -22,7 +22,7 @@ function listItems() {
 function listItemsWithStats() {
   return all(`
     SELECT
-      i.*,
+      i.id, i.name, i.sku, i.active, i.reorder_level, i.starting_quantity, i.starting_date, i.image_url,
       i.canonical_item_id AS canonicalItemId,
       i.canonical_mapped_at AS canonicalMappedAt,
       c.name AS canonicalName,
@@ -140,6 +140,18 @@ function updateItem(id, { name, sku, reorderLevel }) {
   ]);
 }
 
+function getItemImage(id) {
+  return all("SELECT id, name, image_url AS imageUrl, image_public_id AS imagePublicId FROM items WHERE id = ?", [id]);
+}
+
+function setItemImage(id, imageUrl, imagePublicId) {
+  return run("UPDATE items SET image_url = ?, image_public_id = ? WHERE id = ?", [imageUrl, imagePublicId, id]);
+}
+
+function clearItemImage(id) {
+  return run("UPDATE items SET image_url = NULL, image_public_id = NULL WHERE id = ?", [id]);
+}
+
 function createPull({ itemId, qty, pulledDate, pulledBy, purpose, notes }) {
   return run(`INSERT INTO inventory_pulls (item_id, qty, pulled_date, pulled_by, purpose, notes)
     VALUES (?, ?, ?, ?, ?, ?)`, [itemId, qty, pulledDate, pulledBy || null, purpose, notes || null]);
@@ -171,6 +183,7 @@ function listEntries(limit = 1000) {
       p.pulled_date AS date,
       i.name AS itemPulled,
       c.name AS canonicalItem,
+      i.image_url AS imageUrl,
       p.qty,
       p.pulled_by AS pulledBy,
       p.purpose,
@@ -420,6 +433,7 @@ async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive
       id: Number(root.id),
       name: root.name,
       sku: root.sku,
+      imageUrl: root.image_url,
       active: Number(root.active),
       reorderLevel: Number(root.reorder_level),
       startingQuantity: members.reduce((total, item) => total + Number(item.starting_quantity), 0),
@@ -440,12 +454,12 @@ function getWeeklyUsage({ startDate, endDate }) {
   const start = startDate || getWeekStart(new Date().toISOString().slice(0, 10));
   const end = endDate || getWeekEnd(start);
   return all(`
-    SELECT root.id, root.name, SUM(p.qty) AS usedQty
+    SELECT root.id, root.name, root.image_url AS imageUrl, SUM(p.qty) AS usedQty
     FROM inventory_pulls p
     JOIN items source ON source.id = p.item_id
     JOIN items root ON root.id = COALESCE(source.canonical_item_id, source.id)
     WHERE p.pulled_date BETWEEN ? AND ?
-    GROUP BY root.id, root.name
+    GROUP BY root.id, root.name, root.image_url
     ORDER BY root.name
   `, [start, end]);
 }
@@ -505,4 +519,4 @@ function getUsageAnalysis(itemIds = []) {
   `, ids);
 }
 
-module.exports = { listItems, listItemsWithStats, findItemByName, getItemForEdit, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, updateItem, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };
+module.exports = { listItems, listItemsWithStats, findItemByName, getItemForEdit, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, updateItem, getItemImage, setItemImage, clearItemImage, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };

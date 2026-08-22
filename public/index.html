@@ -206,6 +206,8 @@
       <label>Starting QTY <input type="number" name="startingQuantity" min="0" value="0" required /></label>
       <label>Reorder Level <input type="number" name="reorderLevel" min="0" value="0" /></label>
       <label>Starting Date <input type="date" name="startingDate" /></label>
+      <label>Product Image (optional) <input id="itemImage" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+      <div id="itemImagePreview" class="image-preview" hidden></div>
       <p id="itemStatus" class="status-line"></p>
       <button>Add Item</button>
     </form>
@@ -220,6 +222,10 @@
       <label>Item Name <input name="name" required /></label>
       <label>SKU <input name="sku" /></label>
       <label>Reorder Level <input type="number" name="reorderLevel" min="0" required /></label>
+      <div id="editItemCurrentImage" class="edit-item-image"></div>
+      <label><span id="editItemImageLabel">Add Image</span> <input id="editItemImage" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+      <div id="editItemImagePreview" class="image-preview" hidden></div>
+      <button id="removeItemImage" type="button" class="secondary" hidden>Remove Image</button>
       <p class="field-help">Starting quantity is preserved because changing it would alter historical inventory calculations. Names with existing history are also protected; use SKU Management to consolidate them.</p>
       <p id="editItemStatus" class="status-line"></p>
       <button>Save Changes</button>
@@ -253,6 +259,13 @@
     </div>
     <div id="auditDialogMeta" class="dialog-meta"></div>
     <table id="auditDetailTable"></table>
+  </dialog>
+  <dialog id="imageDialog" class="image-dialog">
+    <div class="dialog-header">
+      <h2 id="imageDialogTitle">Product Image</h2>
+      <button id="closeImageDialog" type="button" class="secondary">Close</button>
+    </div>
+    <img id="imageDialogImage" alt="" />
   </dialog>
   <script src="/app.js"></script>
 </body>

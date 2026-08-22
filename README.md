@@ -29,6 +29,9 @@ Create a `.env` file with your Turso connection values:
 ```bash
 TURSO_DATABASE_URL=libsql://your-database.turso.io
 TURSO_DATABASE_TOKEN=your-token
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 ```
 
 ```bash
@@ -41,6 +44,18 @@ Open:
 ```text
 http://localhost:3000
 ```
+
+## Product images
+
+Product images are stored in Cloudinary under `swag-inventory/products`; the app stores only `image_url` and `image_public_id` on the existing `items` row. The database migration runs automatically at startup and leaves existing items and all transaction history intact.
+
+To enable images:
+
+1. Create or use a Cloudinary account and copy its cloud name, API key, and API secret.
+2. Add the three `CLOUDINARY_*` values to `.env` locally.
+3. Add the same three secret environment variables to the Render service and redeploy.
+
+No unsigned upload preset is required because uploads are authenticated by the server. If Cloudinary is not configured, all non-image inventory features continue to work and image requests return a configuration error.
 
 ## Apply 2026-05-11 spreadsheet counts
 
@@ -76,6 +91,8 @@ The backfill uses spreadsheet row source references so it can be run again witho
 
 - `GET /api/items`
 - `POST /api/items`
+- `POST /api/items/:id/image`
+- `DELETE /api/items/:id/image`
 - `POST /api/pulls`
 - `POST /api/receipts`
 - `POST /api/physical-counts`

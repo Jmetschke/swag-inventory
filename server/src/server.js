@@ -1,16 +1,32 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
 const { initDb } = require("./db");
 const q = require("./queries");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 const { parseReportingWorkbook, createEntryTemplate } = require("./reportingWorkbook");
+const { uploadProductImage, deleteProductImage } = require("./cloudinary");
 
 const app = express();
 let dbReady = false;
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+
+const productImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, callback) => {
+    if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
+      callback(null, true);
+      return;
+    }
+    const err = new Error("Product images must be JPEG, PNG, or WEBP files");
+    err.status = 400;
+    callback(err);
+  }
+});
 
 app.use("/api", (req, res, next) => {
   if (!dbReady) {
@@ -27,6 +43,16 @@ function requireFields(body, fields) {
     err.status = 400;
     throw err;
   }
+}
+
+function requireValidItemId(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: "Invalid item id" });
+    return;
+  }
+  req.itemId = id;
+  next();
 }
 
 function normalizeLineItems(body) {
@@ -123,6 +149,80 @@ app.patch("/api/items/:id", async (req, res, next) => {
     }
     const result = await q.updateItem(id, { ...req.body, name: normalizedName, reorderLevel });
     res.json({ id, rowsAffected: result.rowsAffected });
+  } catch (err) { next(err); }
+});
+
+app.post("/api/items/:id/image", requireValidItemId, productImageUpload.single("image"), async (req, res, next) => {
+  try {
+    const id = req.itemId;
+    if (!req.file) {
+      const err = new Error("Choose a product image to upload");
+      err.status = 400;
+      throw err;
+    }
+    const [item] = await q.getItemImage(id);
+    if (!item) {
+      const err = new Error("Item not found");
+      err.status = 404;
+      throw err;
+    }
+
+    let uploaded;
+    try {
+      uploaded = await uploadProductImage(req.file.buffer, id);
+    } catch (cause) {
+      const err = new Error("Cloudinary could not upload the product image. Try again later.");
+      err.status = 502;
+      err.cause = cause;
+      throw err;
+    }
+
+    try {
+      await q.setItemImage(id, uploaded.secure_url, uploaded.public_id);
+    } catch (cause) {
+      try { await deleteProductImage(uploaded.public_id); } catch (_) { /* best-effort rollback */ }
+      const err = new Error("The image uploaded, but the item could not be updated. No inventory data was changed.");
+      err.status = 500;
+      err.cause = cause;
+      throw err;
+    }
+
+    let cleanupWarning = null;
+    if (item.imagePublicId && item.imagePublicId !== uploaded.public_id) {
+      try {
+        await deleteProductImage(item.imagePublicId);
+      } catch (_) {
+        cleanupWarning = "The new image was saved, but the previous Cloudinary asset could not be removed.";
+      }
+    }
+    res.json({ id, imageUrl: uploaded.secure_url, imagePublicId: uploaded.public_id, cleanupWarning });
+  } catch (err) { next(err); }
+});
+
+app.delete("/api/items/:id/image", requireValidItemId, async (req, res, next) => {
+  try {
+    const id = req.itemId;
+    const [item] = await q.getItemImage(id);
+    if (!item) {
+      const err = new Error("Item not found");
+      err.status = 404;
+      throw err;
+    }
+    if (!item.imagePublicId) {
+      await q.clearItemImage(id);
+      res.json({ id, imageUrl: null, removed: false });
+      return;
+    }
+    try {
+      await deleteProductImage(item.imagePublicId);
+    } catch (cause) {
+      const err = new Error("Cloudinary could not remove the product image. The item was left unchanged.");
+      err.status = 502;
+      err.cause = cause;
+      throw err;
+    }
+    await q.clearItemImage(id);
+    res.json({ id, imageUrl: null, removed: true });
   } catch (err) { next(err); }
 });
 
@@ -408,6 +508,14 @@ app.get("/api/logs/pulls", async (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+    res.status(400).json({ error: "Product images must be 5 MB or smaller" });
+    return;
+  }
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({ error: "The product image upload was invalid" });
+    return;
+  }
   res.status(err.status || 500).json({ error: err.message || "Server error" });
 });
 

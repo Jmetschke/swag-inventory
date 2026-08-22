@@ -120,6 +120,12 @@ async function initDb() {
   if (!itemColumns.some(column => column.name === "canonical_mapped_at")) {
     await run("ALTER TABLE items ADD COLUMN canonical_mapped_at TEXT");
   }
+  if (!itemColumns.some(column => column.name === "image_url")) {
+    await run("ALTER TABLE items ADD COLUMN image_url TEXT");
+  }
+  if (!itemColumns.some(column => column.name === "image_public_id")) {
+    await run("ALTER TABLE items ADD COLUMN image_public_id TEXT");
+  }
   await run("CREATE INDEX IF NOT EXISTS idx_items_canonical_item_id ON items(canonical_item_id)");
   await run("CREATE INDEX IF NOT EXISTS idx_pulls_item_date ON inventory_pulls(item_id, pulled_date)");
   await run("CREATE INDEX IF NOT EXISTS idx_pulls_date ON inventory_pulls(pulled_date)");

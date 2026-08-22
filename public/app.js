@@ -32,6 +32,36 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function thumbnailUrl(imageUrl, size = 96) {
+  if (!imageUrl) return '';
+  return imageUrl.replace('/upload/', `/upload/f_auto,q_auto,c_fill,w_${size},h_${size}/`);
+}
+
+function imageMarkup(imageUrl, name, className = 'product-thumbnail') {
+  if (!imageUrl) return `<span class="product-placeholder${className === 'table-thumbnail' ? ' table-placeholder' : ''}" aria-label="No product image">No image</span>`;
+  return `<button type="button" class="thumbnail-button" data-full-image="${escapeHtml(imageUrl)}" data-image-name="${escapeHtml(name)}" aria-label="View larger image for ${escapeHtml(name)}">
+    <img class="${className}" src="${escapeHtml(thumbnailUrl(imageUrl))}" alt="${escapeHtml(name)}" loading="lazy" />
+  </button>`;
+}
+
+function renderFilePreview(input, container) {
+  const file = input.files[0];
+  container.innerHTML = '';
+  container.hidden = !file;
+  if (!file) return;
+  const image = document.createElement('img');
+  image.src = URL.createObjectURL(file);
+  image.alt = 'Selected product image preview';
+  image.onload = () => URL.revokeObjectURL(image.src);
+  container.appendChild(image);
+}
+
+async function uploadItemImage(itemId, file) {
+  const body = new FormData();
+  body.append('image', file);
+  return action(`/api/items/${itemId}/image`, { method: 'POST', body });
+}
+
 async function loadItems(includeStats = false) {
   items = await action(`/api/items${includeStats ? '?includeStats=true' : ''}`);
   refreshItemSelects();
@@ -61,7 +91,15 @@ function refreshItemSelects() {
     if ([...select.options].some(option => option.value === selected)) {
       select.value = selected;
     }
+    updateLineItemImage(select.closest('.line-item'));
   }
+}
+
+function updateLineItemImage(row) {
+  if (!row) return;
+  const select = row.querySelector('select[name="itemId"]');
+  const item = items.find(candidate => Number(candidate.id) === Number(select.value));
+  row.querySelector('.line-item-image').innerHTML = imageMarkup(item?.image_url, item?.name || 'Product');
 }
 
 function addLineItem(containerId, minQty) {
@@ -71,14 +109,17 @@ function addLineItem(containerId, minQty) {
   const row = document.createElement('div');
   row.className = 'line-item';
   row.innerHTML = `
+    <div class="line-item-image"></div>
     <label>${itemLabel} <select name="itemId" required>${itemOptions(false)}</select></label>
     <label>${qtyLabel} <input type="number" name="qty" min="${minQty}" required /></label>
     <button type="button" class="secondary remove-line">Remove</button>
   `;
+  row.querySelector('select[name="itemId"]').addEventListener('change', () => updateLineItemImage(row));
   row.querySelector('.remove-line').addEventListener('click', () => {
     if (container.children.length > 1) row.remove();
   });
   container.appendChild(row);
+  updateLineItemImage(row);
 }
 
 function getLineItems(containerId) {
@@ -115,6 +156,37 @@ document.getElementById('openCanonicalDialog').addEventListener('click', openIte
 document.getElementById('closeItemDialog').addEventListener('click', () => document.getElementById('itemDialog').close());
 document.getElementById('closeEditItemDialog').addEventListener('click', () => document.getElementById('editItemDialog').close());
 document.getElementById('closeReceiptDialog').addEventListener('click', () => document.getElementById('receiptDialog').close());
+document.getElementById('closeImageDialog').addEventListener('click', () => document.getElementById('imageDialog').close());
+document.getElementById('itemImage').addEventListener('change', (e) => renderFilePreview(e.target, document.getElementById('itemImagePreview')));
+document.getElementById('editItemImage').addEventListener('change', (e) => renderFilePreview(e.target, document.getElementById('editItemImagePreview')));
+document.addEventListener('click', (e) => {
+  const thumbnail = e.target.closest('[data-full-image]');
+  if (!thumbnail) return;
+  document.getElementById('imageDialogTitle').textContent = thumbnail.dataset.imageName || 'Product Image';
+  const image = document.getElementById('imageDialogImage');
+  image.src = thumbnail.dataset.fullImage;
+  image.alt = thumbnail.dataset.imageName || 'Product image';
+  document.getElementById('imageDialog').showModal();
+});
+document.getElementById('removeItemImage').addEventListener('click', async () => {
+  const form = document.getElementById('editItemForm');
+  const id = Number(form.elements.id.value);
+  const status = document.getElementById('editItemStatus');
+  if (!window.confirm('Remove this product image? The inventory item and its history will remain unchanged.')) return;
+  status.textContent = 'Removing image...';
+  try {
+    await action(`/api/items/${id}/image`, { method: 'DELETE' });
+    const skuManagementOpen = isTabActive('skuTab');
+    const refreshes = [loadItems(skuManagementOpen)];
+    if (isTabActive('inventoryTab')) refreshes.push(refreshInventory());
+    await Promise.all(refreshes);
+    if (skuManagementOpen) renderSkuManagement();
+    openEditItemDialog(id);
+    status.textContent = 'Image removed.';
+  } catch (err) {
+    status.textContent = err.message;
+  }
+});
 document.getElementById('inventoryTab').addEventListener('click', async (e) => {
   const editButton = e.target.closest('button[data-edit-item-id]');
   if (editButton) {
@@ -159,12 +231,25 @@ document.querySelectorAll('.tab-button').forEach(button => {
 document.getElementById('itemForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = formData(e.target);
+  const imageFile = document.getElementById('itemImage').files[0];
   body.startingQuantity = Number(body.startingQuantity || 0);
   body.reorderLevel = Number(body.reorderLevel || 0);
   setFormBusy(e.target, true, 'itemStatus', 'Adding item...');
   try {
-    await postJson('/api/items', body);
+    const result = await postJson('/api/items', body);
+    let imageWarning = null;
+    if (imageFile) {
+      document.getElementById('itemStatus').textContent = 'Uploading product image...';
+      try {
+        const upload = await uploadItemImage(result.id, imageFile);
+        imageWarning = upload.cleanupWarning;
+      } catch (err) {
+        imageWarning = `Item created, but the image was not saved: ${err.message}`;
+      }
+    }
     e.target.reset();
+    document.getElementById('itemImagePreview').hidden = true;
+    document.getElementById('itemImagePreview').innerHTML = '';
     e.target.querySelector('input[name="startingDate"]').value = today;
     document.getElementById('itemDialog').close();
     const skuManagementOpen = isTabActive('skuTab');
@@ -173,6 +258,7 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
     await Promise.all(refreshes);
     renderAnalysisProducts();
     if (skuManagementOpen) renderSkuManagement('Canonical SKU created.');
+    if (imageWarning) window.alert(imageWarning);
   } catch (err) {
     document.getElementById('itemStatus').textContent = err.message;
   } finally {
@@ -185,6 +271,7 @@ document.getElementById('editItemForm').addEventListener('submit', async (e) => 
   e.preventDefault();
   const body = formData(e.target);
   const id = Number(body.id);
+  const imageFile = document.getElementById('editItemImage').files[0];
   body.reorderLevel = Number(body.reorderLevel || 0);
   delete body.id;
   const status = document.getElementById('editItemStatus');
@@ -195,9 +282,24 @@ document.getElementById('editItemForm').addEventListener('submit', async (e) => 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
+    let imageWarning = null;
+    if (imageFile) {
+      status.textContent = 'Uploading product image...';
+      try {
+        const upload = await uploadItemImage(id, imageFile);
+        imageWarning = upload.cleanupWarning;
+      } catch (err) {
+        imageWarning = `Item details were saved, but the image was not saved: ${err.message}`;
+      }
+    }
     document.getElementById('editItemDialog').close();
-    await Promise.all([loadItems(), refreshInventory()]);
+    const skuManagementOpen = isTabActive('skuTab');
+    const refreshes = [loadItems(skuManagementOpen)];
+    if (isTabActive('inventoryTab')) refreshes.push(refreshInventory());
+    await Promise.all(refreshes);
     renderAnalysisProducts();
+    if (skuManagementOpen) renderSkuManagement('Item updated.');
+    if (imageWarning) window.alert(imageWarning);
   } catch (err) {
     status.textContent = err.message;
   } finally {
@@ -214,8 +316,15 @@ function openEditItemDialog(id) {
   form.elements.name.value = item.name;
   form.elements.sku.value = item.sku || '';
   form.elements.reorderLevel.value = item.reorder_level || 0;
+  const imageUrl = item.image_url;
+  document.getElementById('editItemCurrentImage').innerHTML = imageUrl ? imageMarkup(imageUrl, item.name) : '<span class="product-placeholder">No image</span>';
+  document.getElementById('editItemImageLabel').textContent = imageUrl ? 'Replace Image' : 'Add Image';
+  document.getElementById('removeItemImage').hidden = !imageUrl;
+  document.getElementById('editItemImage').value = '';
+  document.getElementById('editItemImagePreview').hidden = true;
+  document.getElementById('editItemImagePreview').innerHTML = '';
   document.getElementById('editItemStatus').textContent = '';
-  document.getElementById('editItemDialog').showModal();
+  if (!document.getElementById('editItemDialog').open) document.getElementById('editItemDialog').showModal();
 }
 
 document.getElementById('pullForm').addEventListener('submit', async (e) => {
@@ -264,6 +373,11 @@ document.getElementById('selectAllAnalysis').addEventListener('click', () => set
 document.getElementById('clearAnalysis').addEventListener('click', () => setAnalysisProducts(false));
 document.getElementById('mapSkus').addEventListener('click', mapSelectedSkus);
 document.getElementById('skuManagementTable').addEventListener('click', async (e) => {
+  const editButton = e.target.closest('button[data-edit-item-id]');
+  if (editButton) {
+    openEditItemDialog(Number(editButton.dataset.editItemId));
+    return;
+  }
   const button = e.target.closest('button[data-unmap-id]');
   if (!button) return;
   button.disabled = true;
@@ -328,15 +442,16 @@ async function refreshInventory() {
 
 async function refreshEntries() {
   const entries = await action('/api/entries?limit=2000');
-  renderTable('entriesTable', ['Date','Original SKU','Canonical SKU','QTY','Pulled By','Purpose','Notes'], entries.map(entry => [
-    entry.date,
-    entry.itemPulled,
-    entry.canonicalItem || entry.itemPulled,
+  renderTable('entriesTable', ['Image','Date','Original SKU','Canonical SKU','QTY','Pulled By','Purpose','Notes'], entries.map(entry => [
+    imageMarkup(entry.imageUrl, entry.itemPulled, 'table-thumbnail'),
+    escapeHtml(entry.date),
+    escapeHtml(entry.itemPulled),
+    escapeHtml(entry.canonicalItem || entry.itemPulled),
     entry.qty,
-    entry.pulledBy || '',
-    entry.purpose,
-    entry.notes || ''
-  ]));
+    escapeHtml(entry.pulledBy || ''),
+    escapeHtml(entry.purpose),
+    escapeHtml(entry.notes || '')
+  ]), { allowHtml: true });
 }
 
 function renderSkuManagement(message = '') {
@@ -349,7 +464,8 @@ function renderSkuManagement(message = '') {
   `).join('');
   canonicalSelect.innerHTML = `<option value="">Choose canonical SKU</option>` + canonicalItems
     .map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
-  renderTable('skuManagementTable', ['SKU','Code','Status','Mapped To','Starting QTY','Historical Received','Historical Used','Action'], items.map(item => [
+  renderTable('skuManagementTable', ['Image','SKU','Code','Status','Mapped To','Starting QTY','Historical Received','Historical Used','Action'], items.map(item => [
+    imageMarkup(item.image_url, item.name, 'table-thumbnail'),
     escapeHtml(item.name),
     escapeHtml(item.sku || ''),
     `<span class="status-badge${item.active ? ' active' : ''}">${item.canonicalItemId ? 'Legacy' : (item.active ? 'Active' : 'Inactive')}</span>`,
@@ -357,7 +473,10 @@ function renderSkuManagement(message = '') {
     Number(item.starting_quantity).toLocaleString(),
     Number(item.historicalReceived).toLocaleString(),
     Number(item.historicalUsed).toLocaleString(),
-    item.canonicalItemId ? `<button type="button" class="secondary" data-unmap-id="${item.id}">Remove Mapping</button>` : ''
+    `<div class="inventory-item-actions">
+      <button type="button" class="secondary" data-edit-item-id="${item.id}">Edit</button>
+      ${item.canonicalItemId ? `<button type="button" class="secondary" data-unmap-id="${item.id}">Remove Mapping</button>` : ''}
+    </div>`
   ]), { allowHtml: true });
   document.getElementById('skuMappingStatus').textContent = message;
 }
@@ -544,9 +663,10 @@ async function refreshAudit() {
   const rows = await action(`/api/inventory?${params}`);
   const table = document.getElementById('auditTable');
   table.innerHTML = `
-    <thead><tr><th>Item</th><th>Known Count</th><th>Last Audit</th><th>Counted Number</th></tr></thead>
+    <thead><tr><th>Image</th><th>Item</th><th>Known Count</th><th>Last Audit</th><th>Counted Number</th></tr></thead>
     <tbody>${rows.map(row => `
       <tr>
+        <td>${imageMarkup(row.imageUrl, row.name, 'table-thumbnail')}</td>
         <td>${escapeHtml(row.name)}</td>
         <td>${row.calculatedOnHand}</td>
         <td>${row.lastCountedDate || ''}</td>
@@ -586,7 +706,11 @@ async function runWeeklyReport() {
   const startDate = document.getElementById('weekStart').value || today;
   const endDate = document.getElementById('weekEnd').value || today;
   const report = await action(`/api/reports/weekly-usage?startDate=${startDate}&endDate=${endDate}`);
-  renderTable('weeklyTable', ['Item','Used QTY'], report.rows.map(r => [r.name, r.usedQty]));
+  renderTable('weeklyTable', ['Image','Item','Used QTY'], report.rows.map(r => [
+    imageMarkup(r.imageUrl, r.name, 'table-thumbnail'),
+    escapeHtml(r.name),
+    r.usedQty
+  ]), { allowHtml: true });
 }
 
 function printReport(title, subtitle, tableId) {
@@ -636,9 +760,9 @@ function printAuditSheet() {
   const rows = [...document.querySelectorAll('#auditTable tbody tr')].map(row => {
     const cells = row.querySelectorAll('td');
     return {
-      item: cells[0]?.textContent.trim() || '',
-      knownCount: cells[1]?.textContent.trim() || '',
-      lastAudit: cells[2]?.textContent.trim() || ''
+      item: cells[1]?.textContent.trim() || '',
+      knownCount: cells[2]?.textContent.trim() || '',
+      lastAudit: cells[3]?.textContent.trim() || ''
     };
   });
   const printWindow = window.open('', '_blank', 'width=900,height=700');
@@ -711,15 +835,18 @@ function renderInventoryList(rows) {
           </button>
         </div>
       </div>
-      <dl>
-        <div><dt>SKU</dt><dd>${escapeHtml(row.sku || '—')}</dd></div>
-        <div><dt>Reorder Level</dt><dd>${row.reorderLevel}</dd></div>
-        <div><dt>Starting</dt><dd>${row.startingQuantity}</dd></div>
-        <div><dt>Received</dt><dd>${row.totalReceived}</dd></div>
-        <div><dt>Pulled</dt><dd>${row.totalPulled}</dd></div>
-        <div><dt>Used In Range</dt><dd>${row.pulledInRange}</dd></div>
-        <div><dt>On Hand</dt><dd>${row.calculatedOnHand}</dd></div>
-      </dl>
+      <div class="inventory-item-body">
+        <div>${imageMarkup(row.imageUrl, row.name)}</div>
+        <dl>
+          <div><dt>SKU</dt><dd>${escapeHtml(row.sku || '—')}</dd></div>
+          <div><dt>Reorder Level</dt><dd>${row.reorderLevel}</dd></div>
+          <div><dt>Starting</dt><dd>${row.startingQuantity}</dd></div>
+          <div><dt>Received</dt><dd>${row.totalReceived}</dd></div>
+          <div><dt>Pulled</dt><dd>${row.totalPulled}</dd></div>
+          <div><dt>Used In Range</dt><dd>${row.pulledInRange}</dd></div>
+          <div><dt>On Hand</dt><dd>${row.calculatedOnHand}</dd></div>
+        </dl>
+      </div>
     </article>
   `).join('');
   const activeRows = rows.filter(row => row.active);
