@@ -407,12 +407,7 @@ document.getElementById('skuManagementTable').addEventListener('click', async (e
     renderSkuManagement(err.message);
   }
 });
-document.getElementById('printInventory').addEventListener('click', () => {
-  const asOf = document.getElementById('asOf').value || today;
-  const startDate = document.getElementById('inventoryStart').value || asOf;
-  const endDate = document.getElementById('inventoryEnd').value || asOf;
-  printReport('Calculated Inventory', `As of ${asOf} | Usage ${startDate} to ${endDate}`, 'inventoryList');
-});
+document.getElementById('printInventory').addEventListener('click', printCurrentInventory);
 document.getElementById('printWeekly').addEventListener('click', () => {
   const startDate = document.getElementById('weekStart').value || today;
   const endDate = document.getElementById('weekEnd').value || today;
@@ -825,6 +820,73 @@ function printReport(title, subtitle, tableId) {
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
+}
+
+async function printCurrentInventory() {
+  const button = document.getElementById('printInventory');
+  const asOf = document.getElementById('asOf').value || today;
+  const params = new URLSearchParams({ asOf, startDate: asOf, endDate: asOf });
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) {
+    window.alert('Allow pop-ups to print the current inventory report.');
+    return;
+  }
+  printWindow.document.write('<p style="font-family:Arial,sans-serif;padding:24px">Preparing current inventory…</p>');
+  button.disabled = true;
+  try {
+    const rows = await action(`/api/inventory?${params}`);
+    const reportRows = rows.map(row => {
+      const linkedNames = row.components
+        .filter(component => Number(component.id) !== Number(row.id))
+        .map(component => component.name);
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(row.name)}</strong>
+            ${linkedNames.length ? `<div class="linked-names">Also includes: ${linkedNames.map(escapeHtml).join(', ')}</div>` : ''}
+          </td>
+          <td class="quantity">${Number(row.calculatedOnHand).toLocaleString()}</td>
+        </tr>
+      `;
+    }).join('');
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>Current Inventory — ${escapeHtml(asOf)}</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #222; margin: 24px; }
+            h1 { margin: 0 0 6px; font-size: 24px; }
+            p { margin: 0 0 18px; color: #555; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border-bottom: 1px solid #ccc; padding: 9px 8px; text-align: left; }
+            th { background: #f0f2f5; }
+            th:last-child, .quantity { width: 130px; text-align: right; }
+            .quantity { font-weight: 700; }
+            .linked-names { margin-top: 3px; color: #555; font-size: 12px; }
+            tr { break-inside: avoid; }
+          </style>
+        </head>
+        <body>
+          <h1>Current Inventory</h1>
+          <p>Point-in-time inventory as of ${escapeHtml(asOf)}</p>
+          <table>
+            <thead><tr><th>Item</th><th>On Hand Qty</th></tr></thead>
+            <tbody>${reportRows}</tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  } catch (err) {
+    printWindow.close();
+    window.alert(`Unable to prepare the inventory report: ${err.message}`);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function printAuditSheet() {
