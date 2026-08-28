@@ -76,6 +76,11 @@ async function initDb() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS pull_submissions (
+      request_id TEXT PRIMARY KEY,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS audit_sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       counted_date TEXT NOT NULL,
@@ -112,6 +117,9 @@ async function initDb() {
   if (!pullColumns.some(column => column.name === "source_ref")) {
     await run("ALTER TABLE inventory_pulls ADD COLUMN source_ref TEXT");
   }
+  if (!pullColumns.some(column => column.name === "submission_id")) {
+    await run("ALTER TABLE inventory_pulls ADD COLUMN submission_id TEXT REFERENCES pull_submissions(request_id)");
+  }
 
   const itemColumns = await all("PRAGMA table_info(items)");
   if (!itemColumns.some(column => column.name === "canonical_item_id")) {
@@ -130,6 +138,7 @@ async function initDb() {
   await run("CREATE INDEX IF NOT EXISTS idx_pulls_item_date ON inventory_pulls(item_id, pulled_date)");
   await run("CREATE INDEX IF NOT EXISTS idx_pulls_date ON inventory_pulls(pulled_date)");
   await run("CREATE INDEX IF NOT EXISTS idx_pulls_source_ref ON inventory_pulls(source_ref)");
+  await run("CREATE INDEX IF NOT EXISTS idx_pulls_submission_id ON inventory_pulls(submission_id)");
   await run("CREATE INDEX IF NOT EXISTS idx_receipts_item_date ON inventory_receipts(item_id, received_date)");
   await run("CREATE INDEX IF NOT EXISTS idx_receipts_date ON inventory_receipts(received_date)");
   await run("CREATE INDEX IF NOT EXISTS idx_counts_item_date ON physical_counts(item_id, counted_date)");

@@ -157,12 +157,29 @@ function createPull({ itemId, qty, pulledDate, pulledBy, purpose, notes }) {
     VALUES (?, ?, ?, ?, ?, ?)`, [itemId, qty, pulledDate, pulledBy || null, purpose, notes || null]);
 }
 
-async function createPulls({ items, pulledDate, pulledBy, purpose, notes }) {
-  return runBatch(items.map(item => ({
+async function createPulls({ items, pulledDate, pulledBy, purpose, notes, requestId }) {
+  if (requestId) {
+    const existing = await all("SELECT id FROM inventory_pulls WHERE submission_id = ? ORDER BY id", [requestId]);
+    if (existing.length) return existing.map(row => ({ lastInsertRowid: row.id, rowsAffected: 0 }));
+  }
+  const statements = requestId ? [{
+    sql: "INSERT INTO pull_submissions (request_id) VALUES (?)",
+    args: [requestId]
+  }] : [];
+  statements.push(...items.map(item => ({
     sql: `INSERT INTO inventory_pulls (item_id, qty, pulled_date, pulled_by, purpose, notes)
       VALUES (?, ?, ?, ?, ?, ?)`,
     args: [item.itemId, item.qty, pulledDate, pulledBy || null, purpose, notes || null]
   })));
+  if (requestId) {
+    for (const statement of statements.slice(1)) {
+      statement.sql = `INSERT INTO inventory_pulls (item_id, qty, pulled_date, pulled_by, purpose, notes, submission_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      statement.args.push(requestId);
+    }
+  }
+  const results = await runBatch(statements);
+  return requestId ? results.slice(1) : results;
 }
 
 function entryKey(entry) {

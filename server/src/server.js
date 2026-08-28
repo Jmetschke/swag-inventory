@@ -289,6 +289,12 @@ app.delete("/api/items/:id/mapping", async (req, res, next) => {
 app.post("/api/pulls", async (req, res, next) => {
   try {
     requireFields(req.body, ["pulledDate", "purpose"]);
+    const requestId = req.body.requestId;
+    if (requestId !== undefined && (typeof requestId !== "string" || !/^[a-zA-Z0-9-]{8,100}$/.test(requestId))) {
+      const err = new Error("Invalid pull request id");
+      err.status = 400;
+      throw err;
+    }
     const items = normalizeLineItems(req.body);
     const invalid = items.find(item => item.qty <= 0);
     if (invalid) {
@@ -302,7 +308,7 @@ app.post("/api/pulls", async (req, res, next) => {
       err.status = 400;
       throw err;
     }
-    const results = await q.createPulls({ ...req.body, items });
+    const results = await q.createPulls({ ...req.body, items, requestId });
     res.status(201).json({ ids: results.map(result => result.lastInsertRowid) });
   } catch (err) { next(err); }
 });

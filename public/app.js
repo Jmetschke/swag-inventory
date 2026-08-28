@@ -13,8 +13,9 @@ loadItems().then(() => {
 
 async function action(url, options) {
   const res = await fetch(url, options);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
+  const contentType = res.headers.get('content-type') || '';
+  const data = contentType.includes('application/json') ? await res.json() : null;
+  if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
   return data;
 }
 
@@ -328,18 +329,30 @@ function openEditItemDialog(id) {
   if (!document.getElementById('editItemDialog').open) document.getElementById('editItemDialog').showModal();
 }
 
-document.getElementById('pullForm').addEventListener('submit', async (e) => {
+const pullForm = document.getElementById('pullForm');
+pullForm.addEventListener('input', () => {
+  if (pullForm.dataset.saving !== 'true') delete pullForm.dataset.requestId;
+});
+pullForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (e.target.dataset.saving === 'true') return;
   const body = formData(e.target);
   body.items = getLineItems('pullItems');
+  // Keep this key after a failed response so a retry cannot create a duplicate
+  // if the first request reached the database but its response was interrupted.
+  e.target.dataset.requestId ||= crypto.randomUUID();
+  body.requestId = e.target.dataset.requestId;
+  e.target.dataset.saving = 'true';
   setFormBusy(e.target, true, 'pullStatus', 'Saving pull...');
   try {
     await postJson('/api/pulls', body);
+    delete e.target.dataset.requestId;
     e.target.reset(); resetLineItems('pullItems', 1); document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
     document.getElementById('pullStatus').textContent = 'Pull saved.';
   } catch (err) {
     document.getElementById('pullStatus').textContent = err.message;
   } finally {
+    delete e.target.dataset.saving;
     const submit = e.target.querySelector('button[type="submit"], button:not([type])');
     if (submit) submit.disabled = false;
   }
