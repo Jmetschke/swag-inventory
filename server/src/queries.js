@@ -4,7 +4,7 @@ const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 function listItems() {
   return all(`
     SELECT
-      i.id, i.name, i.sku, i.active, i.reorder_level, i.starting_quantity, i.starting_date, i.image_url,
+      i.id, i.name, i.sku, i.active, i.reorder_level, i.starting_quantity, i.starting_date, i.image_url, i.unit_cost AS unitCost,
       i.canonical_item_id AS canonicalItemId,
       i.canonical_mapped_at AS canonicalMappedAt,
       c.name AS canonicalName,
@@ -22,7 +22,7 @@ function listItems() {
 function listItemsWithStats() {
   return all(`
     SELECT
-      i.id, i.name, i.sku, i.active, i.reorder_level, i.starting_quantity, i.starting_date, i.image_url,
+      i.id, i.name, i.sku, i.active, i.reorder_level, i.starting_quantity, i.starting_date, i.image_url, i.unit_cost AS unitCost,
       i.canonical_item_id AS canonicalItemId,
       i.canonical_mapped_at AS canonicalMappedAt,
       c.name AS canonicalName,
@@ -131,11 +131,12 @@ function createItem({ name, sku, reorderLevel, startingQuantity, startingDate })
   ]);
 }
 
-function updateItem(id, { name, sku, reorderLevel }) {
-  return run(`UPDATE items SET name = ?, sku = ?, reorder_level = ? WHERE id = ?`, [
+function updateItem(id, { name, sku, reorderLevel, unitCost }) {
+  return run(`UPDATE items SET name = ?, sku = ?, reorder_level = ?, unit_cost = ? WHERE id = ?`, [
     name.trim(),
     sku ? sku.trim() : null,
     Number(reorderLevel || 0),
+    unitCost,
     id
   ]);
 }
@@ -460,6 +461,8 @@ async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive
       lastCountedQty,
       lastCountedDate,
       calculatedOnHand,
+      unitCost: root.unitCost,
+      onHandValue: root.unitCost == null ? null : Math.round(calculatedOnHand * root.unitCost * 100) / 100,
       componentCount: members.length,
       components: members.map(item => ({ id: Number(item.id), name: item.name }))
     };

@@ -5,7 +5,7 @@ const multer = require("multer");
 const { initDb } = require("./db");
 const q = require("./queries");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
-const { parseReportingWorkbook, createEntryTemplate } = require("./reportingWorkbook");
+const { parseReportingWorkbook, createEntryTemplate, createOnHandWorkbook } = require("./reportingWorkbook");
 const { uploadProductImage, deleteProductImage } = require("./cloudinary");
 
 const app = express();
@@ -147,7 +147,12 @@ app.patch("/api/items/:id", async (req, res, next) => {
       err.status = 409;
       throw err;
     }
-    const result = await q.updateItem(id, { ...req.body, name: normalizedName, reorderLevel });
+    const rawCost = req.body.unitCost === undefined ? item.unit_cost : req.body.unitCost;
+    const unitCost = rawCost == null || rawCost === "" ? null : Number(rawCost);
+    if (unitCost !== null && ((typeof rawCost !== "string" && typeof rawCost !== "number") || !Number.isFinite(unitCost) || unitCost < 0 || unitCost > 999999999.99 || Math.abs(unitCost * 100 - Math.round(unitCost * 100)) > 0.0001)) {
+      throw Object.assign(new Error("Unit cost must be a non-negative amount with at most two decimal places, or blank if unknown"), { status: 400 });
+    }
+    const result = await q.updateItem(id, { ...req.body, name: normalizedName, reorderLevel, unitCost });
     res.json({ id, rowsAffected: result.rowsAffected });
   } catch (err) { next(err); }
 });
@@ -467,6 +472,21 @@ app.get("/api/inventory", async (req, res, next) => {
     const endDate = req.query.endDate || asOf;
     const includeInactive = req.query.includeInactive === "true";
     res.json(await q.getCurrentInventory(asOf, startDate, endDate, includeInactive));
+  } catch (err) { next(err); }
+});
+
+app.get("/api/reports/on-hand", async (req, res, next) => {
+  try {
+    const ids = String(req.query.itemIds || "").split(",").map(Number);
+    if (!ids.length || ids.some(id => !Number.isInteger(id) || id <= 0)) {
+      throw Object.assign(new Error("Select at least one valid product"), { status: 400 });
+    }
+    const asOf = new Date().toISOString().slice(0, 10);
+    const inventory = await q.getCurrentInventory(asOf, asOf, asOf, true);
+    const rows = inventory.filter(row => ids.includes(row.id));
+    const totalValue = Math.round(rows.reduce((sum, row) => sum + (row.onHandValue ?? 0), 0) * 100) / 100;
+    const unknownCosts = rows.filter(row => row.unitCost == null).length;
+    res.json({ rows, asOf, totalValue, unknownCosts, workbook: createOnHandWorkbook(rows, asOf, totalValue, unknownCosts).toString("base64") });
   } catch (err) { next(err); }
 });
 

@@ -122,6 +122,9 @@ async function initDb() {
   }
 
   const itemColumns = await all("PRAGMA table_info(items)");
+  if (!itemColumns.some(column => column.name === "unit_cost")) {
+    await run("ALTER TABLE items ADD COLUMN unit_cost REAL CHECK(unit_cost >= 0)");
+  }
   if (!itemColumns.some(column => column.name === "canonical_item_id")) {
     await run("ALTER TABLE items ADD COLUMN canonical_item_id INTEGER REFERENCES items(id)");
   }

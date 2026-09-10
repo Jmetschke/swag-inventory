@@ -151,6 +151,7 @@
           <h2>Current On-Hand Lookup</h2>
           <p>Select only the products you want and generate a simple current inventory list.</p>
         </div>
+        <button id="exportOnHand" type="button" class="secondary" disabled>Export to Excel</button>
         <button id="runOnHandLookup" type="button">Show Selected Inventory</button>
       </div>
       <fieldset class="on-hand-filter">
@@ -162,6 +163,7 @@
         <div id="onHandProducts" class="product-filter"></div>
       </fieldset>
       <p id="onHandStatus" class="status-line">Select products to create an on-hand list.</p>
+      <p id="onHandValue" class="status-line"></p>
       <div class="table-scroll"><table id="onHandTable"></table></div>
     </section>
   </main>
@@ -241,6 +243,8 @@
       <input type="hidden" name="id" />
       <label>Item Name <input name="name" required /></label>
       <label>SKU <input name="sku" /></label>
+      <label>Unit Cost ($, optional) <input type="number" name="unitCost" min="0" max="999999999.99" step="0.01" placeholder="Unknown" /></label>
+      <p class="field-help">Leave blank if unknown. For consolidated products, set the cost on the canonical SKU.</p>
       <label>Reorder Level <input type="number" name="reorderLevel" min="0" required /></label>
       <div id="editItemCurrentImage" class="edit-item-image"></div>
       <label><span id="editItemImageLabel">Add Image</span> <input id="editItemImage" type="file" accept="image/jpeg,image/png,image/webp" /></label>

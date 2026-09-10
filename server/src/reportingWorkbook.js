@@ -258,4 +258,25 @@ function createEntryTemplate(activeItems = []) {
   return createZip(files);
 }
 
-module.exports = { parseReportingWorkbook, createEntryTemplate };
+function createOnHandWorkbook(rows, asOf, totalValue, unknownCosts) {
+  const files = Object.fromEntries(unzipEntries(createEntryTemplate()));
+  files["xl/workbook.xml"] = files["xl/workbook.xml"].replace('name="Reporting Sheet"', 'name="On-Hand Inventory"');
+  // Built-in number format 4 displays monetary amounts with two decimal places.
+  files["xl/styles.xml"] = files["xl/styles.xml"].replace('numFmtId="14"', 'numFmtId="4"');
+  const textCell = (ref, value, style = 0) => `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${encodeXml(value)}</t></is></c>`;
+  const numberCell = (ref, value, style = 0) => `<c r="${ref}" s="${style}"><v>${value}</v></c>`;
+  const headers = ['Product', 'SKU', 'On Hand', 'Unit Cost ($)', 'On-Hand Value ($)'];
+  const sheetRows = [`<row r="1">${headers.map((label, i) => textCell(`${String.fromCharCode(65 + i)}1`, label, 1)).join('')}</row>`];
+  rows.forEach((row, i) => {
+    const n = i + 2;
+    sheetRows.push(`<row r="${n}">${textCell(`A${n}`, row.name)}${textCell(`B${n}`, row.sku || '')}${numberCell(`C${n}`, row.calculatedOnHand)}${row.unitCost == null ? textCell(`D${n}`, 'Unknown') + textCell(`E${n}`, 'Unknown') : numberCell(`D${n}`, row.unitCost, 2) + `<c r="E${n}" s="2"><f>ROUND(C${n}*D${n},2)</f><v>${row.onHandValue}</v></c>`}</row>`);
+  });
+  const n = rows.length + 2;
+  sheetRows.push(`<row r="${n}">${textCell(`A${n}`, 'Total known on-hand value', 1)}<c r="E${n}" s="2"><f>${rows.length ? `SUM(E2:E${n - 1})` : '0'}</f><v>${totalValue}</v></c></row>`);
+  sheetRows.push(`<row r="${n + 2}">${textCell(`A${n + 2}`, `As of ${asOf}. ${unknownCosts} product(s) with unknown costs excluded from total.`)}</row>`);
+  sheetRows.push(`<row r="${n + 3}">${textCell(`A${n + 3}`, 'Consolidated products use the canonical SKU unit cost.')}</row>`);
+  files["xl/worksheets/sheet1.xml"] = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="1" width="38" customWidth="1"/><col min="2" max="5" width="22" customWidth="1"/></cols><sheetData>${sheetRows.join('')}</sheetData><autoFilter ref="A1:E${rows.length + 1}"/></worksheet>`;
+  return createZip(files);
+}
+
+module.exports = { parseReportingWorkbook, createEntryTemplate, createOnHandWorkbook };

@@ -1,6 +1,8 @@
 const today = new Date().toISOString().slice(0, 10);
 let items = [];
 let analysisRows = [];
+let onHandExportUrl = null;
+const formatCost = value => value == null ? 'Unknown' : Number(value).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
 document.querySelectorAll('input[type="date"]').forEach(input => input.value = today);
 
@@ -318,6 +320,7 @@ function openEditItemDialog(id) {
   form.elements.name.value = item.name;
   form.elements.sku.value = item.sku || '';
   form.elements.reorderLevel.value = item.reorder_level || 0;
+  form.elements.unitCost.value = item.unitCost ?? '';
   const imageUrl = item.image_url;
   document.getElementById('editItemCurrentImage').innerHTML = imageUrl ? imageMarkup(imageUrl, item.name) : '<span class="product-placeholder">No image</span>';
   document.getElementById('editItemImageLabel').textContent = imageUrl ? 'Replace Image' : 'Add Image';
@@ -524,7 +527,7 @@ function renderAnalysisProducts() {
     </label>
   `).join('');
   if (!document.querySelector('#onHandTable thead')) {
-    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], []);
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand','Unit Cost','On-Hand Value'], []);
   }
 }
 
@@ -538,6 +541,7 @@ function selectedAnalysisItems() {
 }
 
 function renderOnHandProducts() {
+  clearOnHandReport();
   const container = document.getElementById('onHandProducts');
   if (!container) return;
   const selected = new Set([...container.querySelectorAll('input:checked')].map(input => Number(input.value)));
@@ -549,35 +553,65 @@ function renderOnHandProducts() {
 }
 
 function setOnHandProducts(checked) {
+  clearOnHandReport();
   document.querySelectorAll('#onHandProducts input').forEach(input => { input.checked = checked; });
   if (!checked) {
     document.getElementById('onHandStatus').textContent = 'Select products to create an on-hand list.';
-    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], []);
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand','Unit Cost','On-Hand Value'], []);
   }
 }
 
+function clearOnHandReport() {
+  if (onHandExportUrl) URL.revokeObjectURL(onHandExportUrl);
+  onHandExportUrl = null;
+  document.getElementById('exportOnHand').disabled = true;
+  document.getElementById('onHandValue').textContent = '';
+  renderTable('onHandTable', ['Image','Product','SKU','On Hand','Unit Cost','On-Hand Value'], []);
+}
+
+document.getElementById('onHandProducts').addEventListener('change', () => {
+  clearOnHandReport();
+  document.getElementById('onHandStatus').textContent = 'Selection changed. Show selected inventory to update the report.';
+});
+document.getElementById('exportOnHand').addEventListener('click', () => {
+  if (!onHandExportUrl) return;
+  const link = document.createElement('a');
+  link.href = onHandExportUrl;
+  link.download = document.getElementById('exportOnHand').dataset.filename;
+  link.click();
+});
+
 async function runOnHandLookup() {
+  clearOnHandReport();
   const selectedIds = new Set([...document.querySelectorAll('#onHandProducts input:checked')].map(input => Number(input.value)));
   const status = document.getElementById('onHandStatus');
   const button = document.getElementById('runOnHandLookup');
   if (!selectedIds.size) {
     status.textContent = 'Select at least one product.';
-    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], []);
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand','Unit Cost','On-Hand Value'], []);
     return;
   }
   button.disabled = true;
   status.textContent = 'Loading current inventory...';
   try {
-    const params = new URLSearchParams({ asOf: today, startDate: today, endDate: today, includeInactive: 'true' });
-    const inventory = await action(`/api/inventory?${params}`);
-    const rows = inventory.filter(row => selectedIds.has(Number(row.id)));
-    renderTable('onHandTable', ['Image','Product','SKU','On Hand'], rows.map(row => [
+    const params = new URLSearchParams({ itemIds: [...selectedIds].join(',') });
+    const report = await action(`/api/reports/on-hand?${params}`);
+    const currentIds = [...document.querySelectorAll('#onHandProducts input:checked')].map(input => Number(input.value));
+    if (currentIds.length !== selectedIds.size || currentIds.some(id => !selectedIds.has(id))) return;
+    const { rows, asOf, totalValue, unknownCosts, workbook } = report;
+    onHandExportUrl = URL.createObjectURL(new Blob([Uint8Array.from(atob(workbook), char => char.charCodeAt(0))], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    document.getElementById('exportOnHand').disabled = !rows.length;
+    document.getElementById('exportOnHand').dataset.filename = `on-hand-inventory-${asOf}.xlsx`;
+    document.getElementById('onHandValue').textContent = `Total known on-hand value: ${formatCost(totalValue)}. ${unknownCosts} product(s) with unknown costs excluded.`;
+    renderTable('onHandTable', ['Image','Product','SKU','On Hand','Unit Cost','On-Hand Value'], rows.map(row => [
       imageMarkup(row.imageUrl, row.name, 'table-thumbnail'),
       escapeHtml(row.name),
       escapeHtml(row.sku || ''),
-      Number(row.calculatedOnHand).toLocaleString()
+      Number(row.calculatedOnHand).toLocaleString(),
+      formatCost(row.unitCost),
+      formatCost(row.onHandValue)
     ]), { allowHtml: true });
-    status.textContent = `${rows.length} selected product${rows.length === 1 ? '' : 's'} as of ${today}.`;
+    status.textContent = `${rows.length} selected product${rows.length === 1 ? '' : 's'} as of ${asOf}.`;
   } catch (err) {
     status.textContent = err.message;
   } finally {
