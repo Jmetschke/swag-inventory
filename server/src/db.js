@@ -44,6 +44,26 @@ async function runBatch(statements) {
 
 async function initDb() {
   await db.executeMultiple(`
+    CREATE TABLE IF NOT EXISTS giveaway_forms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      employee TEXT NOT NULL COLLATE NOCASE,
+      event TEXT NOT NULL COLLATE NOCASE,
+      date TEXT NOT NULL,
+      UNIQUE(employee, event, date)
+    );
+    CREATE TABLE IF NOT EXISTS giveaway_items (
+      form_id INTEGER NOT NULL REFERENCES giveaway_forms(id),
+      item_id INTEGER NOT NULL REFERENCES items(id),
+      qty INTEGER NOT NULL DEFAULT 0 CHECK(qty >= 0 AND qty <= 1000000000),
+      PRIMARY KEY(form_id, item_id)
+    );
+    CREATE TABLE IF NOT EXISTS giveaway_operations (
+      id TEXT PRIMARY KEY,
+      form_id INTEGER NOT NULL,
+      item_id INTEGER NOT NULL,
+      delta INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
     CREATE TABLE IF NOT EXISTS items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,

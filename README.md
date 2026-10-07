@@ -100,3 +100,23 @@ The backfill uses spreadsheet row source references so it can be run again witho
 - `GET /api/reports/weekly-usage?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`
 - `GET /api/reports/purpose-summary?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`
 - `GET /api/reports/ytd?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`
+
+## Event giveaway tallies
+
+The **Event Giveaways** tab records items physically handed out after inventory has
+already been pulled. Its `giveaway_forms`, `giveaway_items`, and
+`giveaway_operations` tables are separate from inventory accounting: tallying
+never creates pulls, adjusts on-hand counts, or reconciles inventory.
+
+Enter an employee name, event name, and date, then open/create the form. Add
+inventory items and use **+1**, **−1**, or **Add** with a quantity. Matching employee,
+event, and date fields reopen the existing form; the saved-form selector also
+lets users choose previous dates. Names match without regard to capitalization.
+
+Changes save automatically to the database. Browser local storage retains the
+last opened form and unsynced changes through refreshes. Temporary connection
+failures retry automatically, when connectivity returns, or with **Sync / Refresh**.
+Each change has a unique identifier so retries cannot count it twice. Creating a
+new form requires a connection. Keep the browser's site data until pending
+changes have synced; opening the application itself still requires connectivity.
+Database tables are created automatically when the server starts.

@@ -14,6 +14,7 @@
   </header>
   <nav class="tabs" aria-label="Inventory sections">
     <button class="tab-button active" data-tab="inventoryTab" type="button">Inventory</button>
+    <button class="tab-button" data-tab="giveawayTab" type="button">Event Giveaways</button>
     <button class="tab-button" data-tab="pullTab" type="button">Item Pull</button>
     <button class="tab-button" data-tab="entriesTab" type="button">Entries</button>
     <button class="tab-button" data-tab="analysisTab" type="button">Analysis</button>
@@ -57,6 +58,34 @@
         <button id="printWeekly" type="button" class="secondary">Print Report</button>
       </div>
       <table id="weeklyTable"></table>
+    </section>
+  </main>
+
+  <main id="giveawayTab" class="tab-panel">
+    <section class="card wide">
+      <h2>Event Giveaways</h2>
+      <p>Record items physically handed out at your event. These tallies do not change inventory or create inventory pulls.</p>
+      <form id="giveawayOpen" class="inline-fields">
+        <label>Employee name <input id="giveawayEmployee" list="giveawayEmployees" required maxlength="200" autocomplete="name"></label>
+        <datalist id="giveawayEmployees"></datalist>
+        <label>Event name <input id="giveawayEvent" list="giveawayEvents" required maxlength="200"></label>
+        <datalist id="giveawayEvents"></datalist>
+        <label>Date <input id="giveawayDate" type="date" required></label>
+        <button type="submit">Open / Create Form</button>
+      </form>
+      <label class="giveaway-saved">Resume a saved form <select id="giveawaySaved"><option value="">Choose employee and event above, or select a saved form</option></select></label>
+      <p id="giveawayStatus" class="status-line" role="status" aria-live="polite"></p>
+      <button id="giveawayRetry" type="button" class="secondary">Sync / Refresh</button>
+    </section>
+    <section id="giveawaySheet" class="card wide" hidden>
+      <h2 id="giveawayTitle"></h2>
+      <p>Tap +1 for each item given away, or enter a quantity and choose Add. Use −1 to correct a mistake.</p>
+      <form id="giveawayAddItem" class="inline-fields">
+        <label>Inventory item <select id="giveawayItem" required></select></label>
+        <button type="submit">Add Item to Form</button>
+      </form>
+      <p id="giveawayTotal"></p>
+      <div id="giveawayRows" class="giveaway-rows"></div>
     </section>
   </main>
 
@@ -292,5 +321,6 @@
     <img id="imageDialogImage" alt="" />
   </dialog>
   <script src="/app.js"></script>
+  <script src="/giveaways.js"></script>
 </body>
 </html>
