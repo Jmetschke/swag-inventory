@@ -80,6 +80,7 @@
         // Save the acknowledged form before removing its durable retry record.
         save();
         localStorage.removeItem(opPrefix + op.id);
+        window.dispatchEvent(new Event('giveaways-saved'));
         render();
       }
       const [forms, catalog] = await Promise.all([request(''), action('/api/items')]);

@@ -1,0 +1,54 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+test('audit shortages create atomic pulls without double deduction', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'audit-pulls-'));
+  process.env.TURSO_DATABASE_URL = `file:${path.join(directory, 'test.sqlite')}`;
+  process.env.TURSO_DATABASE_TOKEN = 'test';
+  const { db, initDb, all, run } = require('../server/src/db');
+  const q = require('../server/src/queries');
+  try {
+    await initDb();
+    const item = await q.createItem({ name: 'Audit test', startingQuantity: 11 });
+    const id = item.lastInsertRowid;
+    const audit = (qty, date = '2026-11-10') => q.createAudit({ counts: [{ itemId: id, countedQty: qty }], countedDate: date, countedBy: 'Jane', notes: 'Physical check' });
+    const inventory = async (date = '2026-11-10') => (await q.getCurrentInventory(date, date, date)).find(row => row.id === id);
+    const result = await audit(5);
+    assert.equal(result.pullResults.length, 1);
+    const [pull] = await all('SELECT * FROM inventory_pulls WHERE item_id = ?', [id]);
+    assert.equal(pull.qty, 6);
+    assert.equal(pull.pulled_date, '2026-11-10');
+    assert.equal(pull.pulled_by, 'Jane');
+    assert.equal(pull.notes, 'audit');
+    assert.equal(pull.purpose, 'Other');
+    assert.equal((await inventory()).calculatedOnHand, 5);
+    assert.equal((await inventory('2026-11-11')).calculatedOnHand, 5);
+    assert.equal((await inventory()).pulledInRange, 6);
+    assert.equal((await audit(5)).pullResults.length, 0);
+    assert.equal((await audit(8)).pullResults.length, 0);
+    assert.equal((await inventory()).calculatedOnHand, 8);
+    await q.createPull({ itemId: id, qty: 2, pulledDate: '2026-11-11', purpose: 'Employee' });
+    assert.equal((await inventory('2026-11-11')).calculatedOnHand, 6);
+    await audit(0, '2026-11-11');
+    assert.equal((await inventory('2026-11-11')).calculatedOnHand, 0);
+    assert.equal((await all('SELECT SUM(qty) AS qty FROM inventory_pulls WHERE item_id = ?', [id]))[0].qty, 14);
+    assert.equal((await q.getWeeklyUsage({ startDate: '2026-11-10', endDate: '2026-11-11' })).find(row => row.id === id).usedQty, 14);
+    await assert.rejects(q.createAudit({ counts: [{ itemId: id, countedQty: 0 }, { itemId: id, countedQty: 0 }], countedDate: '2026-11-10' }), /once/);
+    await assert.rejects(audit(0, '2026-02-30'), /valid audit date/);
+    const root = (await q.createItem({ name: 'Audit root', startingQuantity: 7 })).lastInsertRowid;
+    const child = (await q.createItem({ name: 'Audit child', startingQuantity: 4 })).lastInsertRowid;
+    await q.mapItems([child], root);
+    await q.createAudit({ counts: [{ itemId: root, countedQty: 5 }], countedDate: '2026-11-10', countedBy: 'Sam' });
+    assert.equal((await all('SELECT qty FROM inventory_pulls WHERE item_id = ?', [root]))[0].qty, 6);
+    assert.equal((await q.getCurrentInventory('2026-11-10', '2026-11-10', '2026-11-10')).find(row => row.id === root).calculatedOnHand, 5);
+    const before = await all('SELECT * FROM audit_sessions');
+    await run("CREATE TRIGGER reject_audit_count BEFORE INSERT ON physical_counts BEGIN SELECT RAISE(ABORT, 'test failure'); END");
+    const pullsBefore = await all('SELECT * FROM inventory_pulls');
+    await assert.rejects(q.createAudit({ counts: [{ itemId: root, countedQty: 1 }], countedDate: '2026-11-10' }), /test failure/);
+    assert.deepEqual(await all('SELECT * FROM audit_sessions'), before);
+    assert.deepEqual(await all('SELECT * FROM inventory_pulls'), pullsBefore);
+  } finally { db.close(); fs.rmSync(directory, { recursive: true, force: true }); }
+});

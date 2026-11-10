@@ -434,10 +434,10 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
     .filter(count => Number.isInteger(count.countedQty));
   setFormBusy(e.target, true, 'auditStatus', 'Saving audit...');
   try {
-    await postJson('/api/audits', body);
+    const result = await postJson('/api/audits', body);
     [...document.querySelectorAll('#auditTable input[name="countedQty"]')].forEach(input => input.value = '');
     await Promise.all([refreshAudit(), refreshAuditHistory()]);
-    document.getElementById('auditStatus').textContent = 'Audit saved.';
+    document.getElementById('auditStatus').textContent = `Audit saved. ${result.pullCount || 0} audit pull(s) recorded.`;
   } catch (err) {
     document.getElementById('auditStatus').textContent = err.message;
   } finally {

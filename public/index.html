@@ -15,6 +15,7 @@
   <nav class="tabs" aria-label="Inventory sections">
     <button class="tab-button active" data-tab="inventoryTab" type="button">Inventory</button>
     <button class="tab-button" data-tab="giveawayTab" type="button">Event Giveaways</button>
+    <button class="tab-button" data-tab="giveawayReportTab" type="button">Giveaway Reports</button>
     <button class="tab-button" data-tab="pullTab" type="button">Item Pull</button>
     <button class="tab-button" data-tab="entriesTab" type="button">Entries</button>
     <button class="tab-button" data-tab="analysisTab" type="button">Analysis</button>
@@ -59,6 +60,24 @@
       </div>
       <table id="weeklyTable"></table>
     </section>
+  </main>
+
+  <main id="giveawayReportTab" class="tab-panel">
+    <section class="card wide">
+      <h2>Giveaway Reports</h2>
+      <p>Saved event giveaways, grouped by event, employee, and item. Each event date has its own card.</p>
+      <div class="inline-fields giveaway-report-filters">
+        <label>Event <input id="giveawayReportEvent" type="search" placeholder="Search events"></label>
+        <label>Employee <input id="giveawayReportEmployee" type="search" placeholder="Search employees"></label>
+        <label>Item <input id="giveawayReportItem" type="search" placeholder="Search items"></label>
+        <button id="giveawayReportClear" type="button" class="secondary">Clear Search</button>
+        <button id="giveawayReportRefresh" type="button" class="secondary">Refresh</button>
+      </div>
+      <p class="field-help">Combine searches to narrow results. Filtered cards show matching quantities alongside the full event total. Only synced tallies appear here; inventory is not affected.</p>
+      <p id="giveawayReportStatus" class="status-line" role="status" aria-live="polite"></p>
+      <p id="giveawayReportSummary"></p>
+    </section>
+    <div id="giveawayReportCards" class="giveaway-report-cards wide"></div>
   </main>
 
   <main id="giveawayTab" class="tab-panel">
@@ -228,6 +247,7 @@
   <main id="auditTab" class="tab-panel">
     <section class="card wide">
       <h2>Inventory Audit</h2>
+      <p class="field-help">Counts below known inventory record the difference as an item pull on the audit date, with “audit” in the notes. Increases update the count without creating a pull.</p>
       <form id="auditForm">
         <div class="inline-fields">
           <label>Audit Date <input id="auditDate" name="countedDate" type="date" required /></label>
@@ -322,5 +342,6 @@
   </dialog>
   <script src="/app.js"></script>
   <script src="/giveaways.js"></script>
+  <script src="/giveaway-reports.js"></script>
 </body>
 </html>

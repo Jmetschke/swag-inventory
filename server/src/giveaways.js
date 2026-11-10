@@ -23,6 +23,16 @@ router.post('/', async (req, res, next) => {
     res.json(await getForm(form.id));
   } catch (err) { next(err); }
 });
+router.get('/report', async (req, res, next) => {
+  try {
+    res.json(await all(`SELECT f.id AS formId, f.event, f.employee, f.date,
+      g.item_id AS itemId, i.name AS itemName, g.qty
+      FROM giveaway_forms f
+      JOIN giveaway_items g ON g.form_id = f.id
+      JOIN items i ON i.id = g.item_id
+      ORDER BY f.date DESC, f.event COLLATE NOCASE, f.employee COLLATE NOCASE, i.name COLLATE NOCASE`));
+  } catch (err) { next(err); }
+});
 router.get('/:id', async (req, res, next) => {
   try {
     if (!validId(req.params.id)) throw fail('Invalid form');

@@ -462,7 +462,8 @@ app.post("/api/audits", async (req, res, next) => {
     const result = await q.createAudit({ ...req.body, counts: normalized });
     res.status(201).json({
       id: result.auditId,
-      ids: result.countResults.map(count => count.lastInsertRowid)
+      ids: result.countResults.map(count => count.lastInsertRowid),
+      pullCount: result.pullResults.length
     });
   } catch (err) { next(err); }
 });

@@ -120,3 +120,25 @@ Each change has a unique identifier so retries cannot count it twice. Creating a
 new form requires a connection. Keep the browser's site data until pending
 changes have synced; opening the application itself still requires connectivity.
 Database tables are created automatically when the server starts.
+
+The **Giveaway Reports** tab automatically reads saved tallies into event cards,
+with a separate card for each event date. Cards list employees, their item names,
+and quantities. Event, employee, and item searches accept partial names and can
+be combined. Filtered cards show the matching quantity and the full event total.
+Reports refresh when opened, after tallies sync in the same page, and every 30
+seconds while visible. Unsynced browser changes appear after they are saved.
+
+Run giveaway report checks with `node --test tests/giveaway-reports.test.js`.
+These checks use a temporary database and do not access production data.
+
+## Audit shortage pulls
+
+New audits compare each physical count with calculated inventory on the audit
+date. A decrease creates an inventory pull for the difference, dated to the
+audit, attributed to the auditor, with purpose `Other` and notes `audit`.
+For example, counting 5 when inventory shows 11 records a pull of 6. The physical
+count remains the baseline, so the shortage is not deducted twice. Equal or
+higher counts do not create pulls. Audit records, shortage pulls, and physical
+counts save in one transaction. Existing audits are not backfilled.
+
+Run the audit checks with `node --test tests/audit-pulls.test.js`.

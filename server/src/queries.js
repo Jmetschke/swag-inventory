@@ -1,8 +1,8 @@
-const { all, run, runBatch } = require("./db");
+const { db, all, run, runBatch } = require("./db");
 const { getWeekStart, getWeekEnd } = require("./inventoryMath");
 
-function listItems() {
-  return all(`
+function listItems(read = all) {
+  return read(`
     SELECT
       i.id, i.name, i.sku, i.active, i.reorder_level, i.starting_quantity, i.starting_date, i.image_url, i.unit_cost AS unitCost,
       i.canonical_item_id AS canonicalItemId,
@@ -333,16 +333,51 @@ async function createAuditItems({ auditId, counts }) {
 }
 
 async function createAudit({ counts, countedDate, countedBy, notes }) {
-  const audit = await createAuditSession({ countedDate, countedBy, notes });
-  const auditId = audit.lastInsertRowid;
-  const auditItemResults = counts.length
-    ? await createAuditItems({ auditId, counts })
-    : [];
-  const physicalCounts = counts.filter(count => count.countedQty >= 0);
-  const countResults = physicalCounts.length
-    ? await createPhysicalCounts({ auditId, counts: physicalCounts, countedDate, countedBy, notes })
-    : [];
-  return { auditId, auditItemResults, countResults };
+  const invalid = message => Object.assign(new Error(message), { status: 400 });
+  if (typeof countedDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(countedDate)
+      || !Number.isFinite(Date.parse(countedDate)) || new Date(countedDate).toISOString().slice(0, 10) !== countedDate) {
+    throw invalid("A valid audit date is required");
+  }
+  if (new Set(counts.map(count => count.itemId)).size !== counts.length) throw invalid("Each item can only appear once in an audit");
+  const tx = await db.transaction("write");
+  const read = async (sql, args = []) => (await tx.execute({ sql, args })).rows;
+  const write = async (sql, args) => {
+    const result = await tx.execute({ sql, args });
+    return { lastInsertRowid: Number(result.lastInsertRowid), rowsAffected: result.rowsAffected };
+  };
+  try {
+    // Compare against the same consolidated inventory shown on the audit sheet,
+    // inside the write transaction so the pull and physical count save together.
+    const inventory = await getCurrentInventory(countedDate, countedDate, countedDate, false, read);
+    const known = new Map(inventory.map(item => [item.id, item.calculatedOnHand]));
+    if (counts.some(count => !known.has(count.itemId))) throw invalid("Audit items must be active inventory items");
+    const audit = await write(`INSERT INTO audit_sessions (counted_date, counted_by, notes) VALUES (?, ?, ?)`,
+      [countedDate, countedBy || null, notes || null]);
+    const auditId = audit.lastInsertRowid;
+    const auditItemResults = [], countResults = [], pullResults = [];
+    for (const count of counts) {
+      auditItemResults.push(await write("INSERT INTO audit_items (audit_id, item_id, counted_qty) VALUES (?, ?, ?)",
+        [auditId, count.itemId, count.countedQty]));
+      if (count.countedQty < 0) continue;
+      const shortage = known.get(count.itemId) - count.countedQty;
+      if (shortage > 0) {
+        pullResults.push(await write(`INSERT INTO inventory_pulls
+          (item_id, qty, pulled_date, pulled_by, purpose, notes, source_ref)
+          VALUES (?, ?, ?, ?, 'Other', 'audit', ?)`,
+        [count.itemId, shortage, countedDate, countedBy || null, `audit:${auditId}:${count.itemId}`]));
+      }
+      // The physical count is the end-of-day baseline. The audit pull is already
+      // reflected in it and remains visible in pull history and usage reports.
+      countResults.push(await write(`INSERT INTO physical_counts
+        (audit_id, item_id, counted_qty, counted_date, counted_by, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+      [auditId, count.itemId, count.countedQty, countedDate, countedBy || null, notes || null]));
+    }
+    await tx.commit();
+    return { auditId, auditItemResults, countResults, pullResults };
+  } catch (err) {
+    if (!tx.closed) await tx.rollback();
+    throw err;
+  } finally { tx.close(); }
 }
 
 function listAudits() {
@@ -381,15 +416,15 @@ function getAuditDetails(id) {
   `, [id]);
 }
 
-async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive = false) {
+async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive = false, read = all) {
   const pullThrough = endDate > asOfDate ? endDate : asOfDate;
   const [itemRows, receipts, pulls, counts] = await Promise.all([
-    listItems(),
-    all(`SELECT item_id AS itemId, SUM(qty) AS qty, received_date AS date
+    listItems(read),
+    read(`SELECT item_id AS itemId, SUM(qty) AS qty, received_date AS date
       FROM inventory_receipts WHERE received_date <= ? GROUP BY item_id, received_date`, [asOfDate]),
-    all(`SELECT item_id AS itemId, SUM(qty) AS qty, pulled_date AS date
+    read(`SELECT item_id AS itemId, SUM(qty) AS qty, pulled_date AS date
       FROM inventory_pulls WHERE pulled_date <= ? GROUP BY item_id, pulled_date`, [pullThrough]),
-    all(`SELECT id, item_id AS itemId, counted_qty AS qty, counted_date AS date, created_at AS createdAt
+    read(`SELECT id, item_id AS itemId, counted_qty AS qty, counted_date AS date, created_at AS createdAt
       FROM physical_counts WHERE counted_date <= ? ORDER BY counted_date DESC, id DESC`, [asOfDate])
   ]);
   const roots = itemRows.filter(item => !item.canonicalItemId && (includeInactive || item.active));
