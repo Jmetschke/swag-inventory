@@ -263,7 +263,8 @@
 
     <section class="card wide">
       <h2>Audit History</h2>
-      <table id="auditHistoryTable"></table>
+      <p class="field-help">Totals cover the items included in each audit. Removed and added quantities are shown separately; net change is ending minus starting. Older starting counts may not have been recorded.</p>
+      <div class="table-scroll"><table id="auditHistoryTable"></table></div>
     </section>
   </main>
   <dialog id="itemDialog">
@@ -331,7 +332,9 @@
       <button id="closeAuditDialog" type="button" class="secondary">Close</button>
     </div>
     <div id="auditDialogMeta" class="dialog-meta"></div>
-    <table id="auditDetailTable"></table>
+    <p id="auditDialogTotals"></p>
+    <p id="auditDialogHistoryNote" class="field-help"></p>
+    <div class="table-scroll"><table id="auditDetailTable"></table></div>
   </dialog>
   <dialog id="imageDialog" class="image-dialog">
     <div class="dialog-header">

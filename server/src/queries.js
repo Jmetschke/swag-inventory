@@ -356,8 +356,8 @@ async function createAudit({ counts, countedDate, countedBy, notes }) {
     const auditId = audit.lastInsertRowid;
     const auditItemResults = [], countResults = [], pullResults = [];
     for (const count of counts) {
-      auditItemResults.push(await write("INSERT INTO audit_items (audit_id, item_id, counted_qty) VALUES (?, ?, ?)",
-        [auditId, count.itemId, count.countedQty]));
+      auditItemResults.push(await write("INSERT INTO audit_items (audit_id, item_id, counted_qty, starting_qty) VALUES (?, ?, ?, ?)",
+        [auditId, count.itemId, count.countedQty, known.get(count.itemId)]));
       if (count.countedQty < 0) continue;
       const shortage = known.get(count.itemId) - count.countedQty;
       if (shortage > 0) {
@@ -380,40 +380,58 @@ async function createAudit({ counts, countedDate, countedBy, notes }) {
   } finally { tx.close(); }
 }
 
-function listAudits() {
+// Earlier audits did not store their starting counts. A linked shortage pull
+// recovers that item's starting count exactly; otherwise leave it unknown.
+function auditHistoryRows(id) {
   return all(`
-    SELECT
-      a.id,
-      a.counted_date AS countedDate,
-      a.counted_by AS countedBy,
-      a.notes,
-      a.created_at AS createdAt,
-      COUNT(ai.id) AS itemCount
-    FROM audit_sessions a
-    LEFT JOIN audit_items ai ON ai.audit_id = a.id
-    GROUP BY a.id, a.counted_date, a.counted_by, a.notes, a.created_at
-    ORDER BY a.counted_date DESC, a.id DESC
-  `);
-}
-
-function getAuditDetails(id) {
-  return all(`
-    SELECT
-      a.id,
-      a.counted_date AS countedDate,
-      a.counted_by AS countedBy,
-      a.notes,
-      a.created_at AS createdAt,
-      i.name AS item,
-      c.name AS canonicalItem,
-      ai.counted_qty AS countedQty
+    SELECT a.id, a.counted_date AS countedDate, a.counted_by AS countedBy,
+      a.notes, a.created_at AS createdAt, ai.id AS auditItemId,
+      i.name AS item, c.name AS canonicalItem, ai.counted_qty AS countedQty,
+      COALESCE(ai.starting_qty, ai.counted_qty + p.qty) AS startingQty,
+      CASE WHEN ai.starting_qty IS NOT NULL THEN 'recorded'
+        WHEN p.qty IS NOT NULL THEN 'recovered' ELSE 'unknown' END AS startingSource
     FROM audit_sessions a
     LEFT JOIN audit_items ai ON ai.audit_id = a.id
     LEFT JOIN items i ON i.id = ai.item_id
     LEFT JOIN items c ON c.id = i.canonical_item_id
-    WHERE a.id = ?
-    ORDER BY i.name
-  `, [id]);
+    LEFT JOIN (
+      SELECT source_ref, SUM(qty) AS qty FROM inventory_pulls
+      WHERE source_ref LIKE 'audit:%' GROUP BY source_ref
+    ) p ON p.source_ref = 'audit:' || a.id || ':' || ai.item_id
+    ${id === undefined ? '' : 'WHERE a.id = ?'}
+    ORDER BY a.counted_date DESC, a.id DESC, i.name
+  `, id === undefined ? [] : [id]);
+}
+
+function summarizeAudit(rows) {
+  const items = rows.filter(row => row.auditItemId != null);
+  const complete = items.every(row => row.startingQty != null);
+  const sum = field => items.reduce((total, row) => total + Number(row[field]), 0);
+  return {
+    itemCount: items.length,
+    startingTotal: complete ? sum('startingQty') : null,
+    endingTotal: sum('countedQty'),
+    removedQty: complete ? items.reduce((total, row) => total + Math.max(0, row.startingQty - row.countedQty), 0) : null,
+    addedQty: complete ? items.reduce((total, row) => total + Math.max(0, row.countedQty - row.startingQty), 0) : null,
+    netChange: complete ? sum('countedQty') - sum('startingQty') : null,
+    missingStartingCounts: items.filter(row => row.startingQty == null).length
+  };
+}
+
+async function listAudits() {
+  const grouped = new Map();
+  for (const row of await auditHistoryRows()) {
+    if (!grouped.has(row.id)) grouped.set(row.id, []);
+    grouped.get(row.id).push(row);
+  }
+  return [...grouped.values()].map(rows => {
+    const { id, countedDate, countedBy, notes, createdAt } = rows[0];
+    return { id, countedDate, countedBy, notes, createdAt, ...summarizeAudit(rows) };
+  });
+}
+
+function getAuditDetails(id) {
+  return auditHistoryRows(id);
 }
 
 async function getCurrentInventory(asOfDate, startDate, endDate, includeInactive = false, read = all) {
@@ -574,4 +592,4 @@ function getUsageAnalysis(itemIds = []) {
   `, ids);
 }
 
-module.exports = { listItems, listItemsWithStats, findItemByName, getItemForEdit, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, updateItem, getItemImage, setItemImage, clearItemImage, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };
+module.exports = { summarizeAudit, listItems, listItemsWithStats, findItemByName, getItemForEdit, setItemActive, mapItems, unmapItem, findInactiveItemIds, createItem, updateItem, getItemImage, setItemImage, clearItemImage, createPull, createPulls, listEntries, importPullEntries, createReceipt, createReceipts, createPhysicalCount, createPhysicalCounts, createAudit, listAudits, getAuditDetails, getCurrentInventory, getWeeklyUsage, getPurposeSummary, getYtdUsage, getPullLog, getUsageAnalysis };

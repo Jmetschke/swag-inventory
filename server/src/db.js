@@ -128,6 +128,11 @@ async function initDb() {
     );
   `);
 
+  const auditItemColumns = await all("PRAGMA table_info(audit_items)");
+  if (!auditItemColumns.some(column => column.name === "starting_qty")) {
+    await run("ALTER TABLE audit_items ADD COLUMN starting_qty INTEGER");
+  }
+
   const physicalCountColumns = await all("PRAGMA table_info(physical_counts)");
   if (!physicalCountColumns.some(column => column.name === "audit_id")) {
     await run("ALTER TABLE physical_counts ADD COLUMN audit_id INTEGER REFERENCES audit_sessions(id)");

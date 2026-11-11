@@ -142,3 +142,16 @@ higher counts do not create pulls. Audit records, shortage pulls, and physical
 counts save in one transaction. Existing audits are not backfilled.
 
 Run the audit checks with `node --test tests/audit-pulls.test.js`.
+
+## Audit history totals
+
+Open **Audit → Audit History → View** to review an audit's date, auditor,
+starting and ending quantities, removed quantities, added quantities, and net
+change, both overall and per item. Totals cover only the audited items. Starting
+counts are now saved with each audit and do not change when later audits occur.
+For older audits, linked audit shortage pulls can recover individual starting
+counts. Missing starting counts are shown as **Not recorded**; complete starting
+and change totals remain unavailable when any item lacks its historical start.
+Ending counts remain visible for those audits.
+
+Run history checks with `node --test tests/audit-history.test.js`.

@@ -426,10 +426,13 @@ app.get("/api/audits/:id", async (req, res, next) => {
       countedBy: first.countedBy,
       notes: first.notes,
       createdAt: first.createdAt,
+      ...q.summarizeAudit(rows),
       rows: rows.filter(row => row.item).map(row => ({
         item: row.item,
         canonicalItem: row.canonicalItem,
-        countedQty: row.countedQty
+        countedQty: row.countedQty,
+        startingQty: row.startingQty,
+        startingSource: row.startingSource
       }))
     });
   } catch (err) { next(err); }

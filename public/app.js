@@ -779,12 +779,21 @@ async function refreshAudit() {
   `;
 }
 
+function auditQuantity(value, signed = false) {
+  return value == null ? 'Not recorded' : `${signed && value > 0 ? '+' : ''}${Number(value).toLocaleString()}`;
+}
+
 async function refreshAuditHistory() {
   const audits = await action('/api/audits');
-  renderTable('auditHistoryTable', ['Date','Counted By','Items','Notes','Details'], audits.map(audit => [
+  renderTable('auditHistoryTable', ['Date','Counted By','Items','Starting Total','Ending Total','Removed','Added','Net Change','Notes','Details'], audits.map(audit => [
     escapeHtml(audit.countedDate),
     escapeHtml(audit.countedBy || ''),
     audit.itemCount,
+    auditQuantity(audit.startingTotal),
+    auditQuantity(audit.endingTotal),
+    auditQuantity(audit.removedQty),
+    auditQuantity(audit.addedQty),
+    auditQuantity(audit.netChange, true),
     escapeHtml(audit.notes || ''),
     `<button type="button" class="secondary" data-audit-id="${audit.id}">View</button>`
   ]), { allowHtml: true });
@@ -797,10 +806,20 @@ async function openAuditDetails(id) {
     audit.countedBy ? `Counted by ${audit.countedBy}` : '',
     audit.notes || ''
   ].filter(Boolean).join(' | ');
-  renderTable('auditDetailTable', ['Original SKU','Canonical SKU','Counted Number'], audit.rows.map(row => [
+  document.getElementById('auditDialogTotals').textContent =
+    `Starting: ${auditQuantity(audit.startingTotal)} · Ending: ${auditQuantity(audit.endingTotal)} · Removed: ${auditQuantity(audit.removedQty)} · Added: ${auditQuantity(audit.addedQty)} · Net change: ${auditQuantity(audit.netChange, true)}`;
+  document.getElementById('auditDialogHistoryNote').textContent = audit.missingStartingCounts
+    ? `${audit.missingStartingCounts} item(s) have no recorded starting count. Complete starting and change totals are unavailable for this audit.`
+    : 'Totals cover the items included in this audit. Net change is ending minus starting.';
+  renderTable('auditDetailTable', ['Original SKU','Canonical SKU','Starting','Ending','Removed','Added','Net Change','Starting Count Source'], audit.rows.map(row => [
     row.item,
     row.canonicalItem || row.item,
-    row.countedQty
+    auditQuantity(row.startingQty),
+    auditQuantity(row.countedQty),
+    auditQuantity(row.startingQty == null ? null : Math.max(0, row.startingQty - row.countedQty)),
+    auditQuantity(row.startingQty == null ? null : Math.max(0, row.countedQty - row.startingQty)),
+    auditQuantity(row.startingQty == null ? null : row.countedQty - row.startingQty, true),
+    row.startingSource === 'recorded' ? 'Saved with audit' : row.startingSource === 'recovered' ? 'Recovered from audit pull' : 'Not recorded'
   ]));
   document.getElementById('auditDialog').showModal();
 }
